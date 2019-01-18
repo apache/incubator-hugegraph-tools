@@ -17,38 +17,39 @@
  * under the License.
  */
 
-package com.baidu.hugegraph.manager;
+package com.baidu.hugegraph.base;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
-import java.util.Map;
 
-import com.baidu.hugegraph.base.ToolClient;
-import com.baidu.hugegraph.base.ToolManager;
-import com.baidu.hugegraph.structure.constant.GraphMode;
+import com.baidu.hugegraph.util.E;
 
-public class GraphsManager extends ToolManager {
+public abstract class Directory {
 
-    public GraphsManager(ToolClient.ConnectionInfo info) {
-        super(info, "graphs");
+    private String directory;
+
+    public Directory(String directory) {
+        E.checkArgument(directory != null && !directory.isEmpty(),
+                        "Directory of backup/restore can't be null or empty");
+        this.directory = directory;
     }
 
-    public List<String> list() {
-        return this.client.graphs().listGraph();
+    public void directory(String directory) {
+        this.directory = directory;
     }
 
-    public Map<String, String> get(String graph) {
-        return this.client.graphs().getGraph(graph);
+    public String directory() {
+        return this.directory;
     }
 
-    public void clear(String graph, String confirmMessage) {
-        this.client.graphs().clear(graph, confirmMessage);
-    }
+    public abstract List<String> files();
 
-    public void mode(String graph, GraphMode mode) {
-        this.client.graphs().mode(graph, mode);
-    }
+    public abstract String suffix();
 
-    public GraphMode mode(String graph) {
-        return this.client.graphs().mode(graph);
-    }
+    public abstract void ensureDirectoryExist(boolean create);
+
+    public abstract InputStream inputStream(String path);
+
+    public abstract OutputStream outputStream(String path, boolean override);
 }
