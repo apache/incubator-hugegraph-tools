@@ -81,7 +81,7 @@ public class BackupRestoreBaseManager extends RetryManager {
     public void init(SubCommands.BackupRestore cmd) {
         assert cmd.retry() > 0;
         this.retry(cmd.retry());
-        ensureDirectoryExist(cmd.logDir());
+        LocalDirectory.ensureDirectoryExist(cmd.logDir());
         this.logDir(cmd.logDir());
         String directory = cmd.directory();
         E.checkArgument(directory != null && !directory.isEmpty(),
@@ -190,18 +190,6 @@ public class BackupRestoreBaseManager extends RetryManager {
         Printer.printMap(type + " summary", summary);
 
         Printer.printKV("cost time(s)", this.elapseSeconds());
-    }
-
-    protected static void ensureDirectoryExist(String dir) {
-        File file = new File(dir);
-        if (file.exists()) {
-            E.checkState(file.isDirectory(),
-                         "Can't use directory '%s' because a file with " +
-                         "same name exists.", file.getAbsolutePath());
-        } else {
-            E.checkState(file.mkdirs(),
-                         "Directory '%s' not exists and created failed", dir);
-        }
     }
 
     protected void write(String file, String type, List<?> list) {

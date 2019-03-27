@@ -62,21 +62,7 @@ public class LocalDirectory extends Directory {
 
     @Override
     public void ensureDirectoryExist(boolean create) {
-        File file = new File(this.directory());
-        if (file.exists()) {
-            E.checkState(file.isDirectory(),
-                         "Can't use directory '%s' because a file with " +
-                         "same name exists.", file.getAbsolutePath());
-        } else {
-            if (create) {
-                E.checkState(file.mkdirs(),
-                             "Directory '%s' not exists and created failed",
-                             file.getAbsolutePath());
-            } else {
-                throw new ToolsException("Directory '%s' not exists",
-                                         file.getAbsolutePath());
-            }
-        }
+        ensureDirectoryExist(this.directory(), create);
     }
 
     @Override
@@ -115,5 +101,27 @@ public class LocalDirectory extends Directory {
                                       e, path);
         }
         return zos;
+    }
+
+    public static void ensureDirectoryExist(String directory) {
+        ensureDirectoryExist(directory, true);
+    }
+
+    private static void ensureDirectoryExist(String directory, boolean create) {
+        File file = new File(directory);
+        if (file.exists()) {
+            E.checkState(file.isDirectory(),
+                         "Can't use directory '%s' because a file with " +
+                         "same name exists.", file.getAbsolutePath());
+        } else {
+            if (create) {
+                E.checkState(file.mkdirs(),
+                             "Directory '%s' not exists and created failed",
+                             file.getAbsolutePath());
+            } else {
+                throw new ToolsException("Directory '%s' not exists",
+                                         file.getAbsolutePath());
+            }
+        }
     }
 }

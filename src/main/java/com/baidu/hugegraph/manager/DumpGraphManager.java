@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.baidu.hugegraph.api.API;
+import com.baidu.hugegraph.base.LocalDirectory;
 import com.baidu.hugegraph.base.Printer;
 import com.baidu.hugegraph.base.ToolClient;
 import com.baidu.hugegraph.formatter.Formatter;
@@ -59,7 +60,7 @@ public class DumpGraphManager extends BackupManager {
     }
 
     public void dump(String outputDir) {
-        ensureDirectoryExist(outputDir);
+        LocalDirectory.ensureDirectoryExist(outputDir);
         this.startTimer();
 
         // Fetch data to JsonGraph
