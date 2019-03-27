@@ -50,9 +50,10 @@ import com.baidu.hugegraph.structure.constant.HugeType;
 import com.baidu.hugegraph.util.E;
 import com.google.common.collect.ImmutableMap;
 
+import static com.baidu.hugegraph.base.HdfsDirectory.HDFS_PREFIX;
+
 public class BackupRestoreBaseManager extends RetryManager {
 
-    public static final String HDFS_PREFIX = "hdfs://";
     protected static final int LBUF_SIZE = 1024;
 
     protected AtomicLong propertyKeyCounter = new AtomicLong(0);
