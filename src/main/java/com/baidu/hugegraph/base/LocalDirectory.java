@@ -73,13 +73,15 @@ public class LocalDirectory extends Directory {
     @Override
     public InputStream inputStream(String file) {
         String path = Paths.get(this.directory(), file).toString();
+        InputStream is = null;
         ZipInputStream zis;
         try {
-            InputStream is = new FileInputStream(path);
+            is = new FileInputStream(path);
             zis = new ZipInputStream(is);
             E.checkState(zis.getNextEntry() != null,
                          "Invalid zip file '%s'", file);
         } catch (IOException e) {
+            closeAndIgnoreException(is);
             throw new ClientException("Failed to read from local file: %s",
                                       e, path);
         }
@@ -89,14 +91,16 @@ public class LocalDirectory extends Directory {
     @Override
     public OutputStream outputStream(String file, boolean override) {
         String path = Paths.get(this.directory(), file).toString();
-        FileOutputStream fos;
-        ZipOutputStream zos;
+        FileOutputStream os = null;
+        ZipOutputStream zos = null;
         try {
-            fos = new FileOutputStream(path, !override);
-            zos = new ZipOutputStream(fos);
+            os = new FileOutputStream(path, !override);
+            zos = new ZipOutputStream(os);
             ZipEntry entry = new ZipEntry(file);
             zos.putNextEntry(entry);
         } catch (IOException e) {
+            closeAndIgnoreException(zos);
+            closeAndIgnoreException(os);
             throw new ClientException("Failed to write to local file: %s",
                                       e, path);
         }

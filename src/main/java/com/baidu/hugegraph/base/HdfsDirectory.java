@@ -119,7 +119,7 @@ public class HdfsDirectory extends Directory {
     public InputStream inputStream(String file) {
         String path = this.path(file);
         FileSystem fs = this.fileSystem();
-        FSDataInputStream is;
+        FSDataInputStream is = null;
         ZipInputStream zis;
         Path source = new Path(path);
         try {
@@ -128,6 +128,7 @@ public class HdfsDirectory extends Directory {
             E.checkState(zis.getNextEntry() != null,
                          "Invalid zip file '%s'", file);
         } catch (IOException e) {
+            closeAndIgnoreException(is);
             throw new ClientException("Failed to read from %s", e, path);
         }
         return zis;
@@ -137,8 +138,8 @@ public class HdfsDirectory extends Directory {
     public OutputStream outputStream(String file, boolean override) {
         String path = this.path(file);
         FileSystem fs = this.fileSystem();
-        FSDataOutputStream os;
-        ZipOutputStream zos;
+        FSDataOutputStream os = null;
+        ZipOutputStream zos = null;
         Path dest = new Path(path);
         try {
             if (override) {
@@ -150,6 +151,8 @@ public class HdfsDirectory extends Directory {
             ZipEntry entry = new ZipEntry(file);
             zos.putNextEntry(entry);
         } catch (IOException e) {
+            closeAndIgnoreException(zos);
+            closeAndIgnoreException(os);
             throw new ClientException("Failed to write to %s", e, path);
         }
         return zos;

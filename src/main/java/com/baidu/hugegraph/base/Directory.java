@@ -19,6 +19,7 @@
 
 package com.baidu.hugegraph.base;
 
+import java.io.Closeable;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
@@ -52,4 +53,15 @@ public abstract class Directory {
     public abstract InputStream inputStream(String path);
 
     public abstract OutputStream outputStream(String path, boolean override);
+
+    public static void closeAndIgnoreException(Closeable stream) {
+        if (stream == null) {
+            return;
+        }
+        try {
+            stream.close();
+        } catch (Exception ignored) {
+            // Ignore
+        }
+    }
 }

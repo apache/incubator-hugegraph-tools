@@ -19,9 +19,8 @@
 
 package com.baidu.hugegraph.base;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,8 +36,7 @@ public class RetryManager extends ToolManager {
             Math.max(4, Runtime.getRuntime().availableProcessors() / 2));
     private final ExecutorService pool =
             Executors.newFixedThreadPool(threadsNum);
-    private final List<Future<?>> futures =
-            Collections.synchronizedList(new ArrayList<>());
+    private final Queue<Future<?>> futures = new ConcurrentLinkedQueue<>();
     private int retry = 0;
 
     public RetryManager(ToolClient.ConnectionInfo info, String type) {
@@ -70,21 +68,14 @@ public class RetryManager extends ToolManager {
     }
 
     public void awaitTasks() {
-        int size = 0;
-        int offset;
-        do {
-            offset = size;
-            size = this.futures.size();
-            for (int i = offset; i < size; i++) {
-                Future<?> future = this.futures.get(i);
-                try {
-                    future.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                }
+        Future<?> future;
+        while ((future = this.futures.peek()) != null) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
             }
-        } while (size < this.futures.size());
-        this.futures.clear();
+        }
     }
 
     public void shutdown(String taskType) {

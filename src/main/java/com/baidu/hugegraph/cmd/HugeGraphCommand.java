@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import com.baidu.hugegraph.base.Printer;
 import com.baidu.hugegraph.base.ToolClient;
+import com.baidu.hugegraph.base.ToolClient.ConnectionInfo;
 import com.baidu.hugegraph.base.ToolManager;
 import com.baidu.hugegraph.manager.BackupManager;
 import com.baidu.hugegraph.manager.DumpGraphManager;
@@ -261,10 +262,10 @@ public class HugeGraphCommand {
 
     private <T extends ToolManager> T manager(Class<T> clz) {
         try {
-            ToolClient.ConnectionInfo info = new ToolClient.ConnectionInfo(
-                                             this.url(), this.graph(),
-                                             this.username(), this.password(),
-                                             this.timeout());
+            ConnectionInfo info = new ConnectionInfo(this.url(), this.graph(),
+                                                     this.username(),
+                                                     this.password(),
+                                                     this.timeout());
             return clz.getConstructor(ToolClient.ConnectionInfo.class)
                       .newInstance(info);
         } catch (Exception e) {
