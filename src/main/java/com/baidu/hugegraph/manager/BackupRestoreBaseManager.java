@@ -21,7 +21,6 @@ package com.baidu.hugegraph.manager;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +49,7 @@ import com.baidu.hugegraph.structure.constant.HugeType;
 import com.baidu.hugegraph.util.E;
 import com.google.common.collect.ImmutableMap;
 
+import static com.baidu.hugegraph.base.Directory.closeAndIgnoreException;
 import static com.baidu.hugegraph.base.HdfsDirectory.HDFS_PREFIX;
 
 public class BackupRestoreBaseManager extends RetryManager {
@@ -137,21 +137,31 @@ public class BackupRestoreBaseManager extends RetryManager {
     }
 
     private OutputStream outputStream(String file) {
-        OutputStream os;
-        if (this.outputStreams.get(file) == null) {
-            os = this.directory.outputStream(file, true);
-            this.outputStreams.putIfAbsent(file, os);
+        OutputStream os = this.outputStreams.get(file);
+        if (os != null) {
+            return os;
         }
-        return this.outputStreams.get(file);
+        os = this.directory.outputStream(file, true);
+        OutputStream prev = this.outputStreams.putIfAbsent(file, os);
+        if (prev != null) {
+            closeAndIgnoreException(os);
+            os = prev;
+        }
+        return os;
     }
 
     private InputStream inputStream(String file) {
-        InputStream is;
-        if (this.inputStreams.get(file) == null) {
-            is = this.directory.inputStream(file);
-            this.inputStreams.putIfAbsent(file, is);
+        InputStream is = this.inputStreams.get(file);
+        if (is != null) {
+            return is;
         }
-        return this.inputStreams.get(file);
+        is = this.directory.inputStream(file);
+        InputStream prev = this.inputStreams.putIfAbsent(file, is);
+        if (prev != null) {
+            closeAndIgnoreException(is);
+            is = prev;
+        }
+        return is;
     }
 
     protected List<String> filesWithPrefix(HugeType type) {

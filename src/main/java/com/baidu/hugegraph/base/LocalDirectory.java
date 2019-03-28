@@ -80,7 +80,7 @@ public class LocalDirectory extends Directory {
             zis = new ZipInputStream(is);
             E.checkState(zis.getNextEntry() != null,
                          "Invalid zip file '%s'", file);
-        } catch (IOException e) {
+        } catch (IOException | IllegalStateException e) {
             closeAndIgnoreException(is);
             throw new ClientException("Failed to read from local file: %s",
                                       e, path);

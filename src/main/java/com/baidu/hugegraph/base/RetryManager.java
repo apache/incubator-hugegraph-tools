@@ -69,7 +69,7 @@ public class RetryManager extends ToolManager {
 
     public void awaitTasks() {
         Future<?> future;
-        while ((future = this.futures.peek()) != null) {
+        while ((future = this.futures.poll()) != null) {
             try {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {
