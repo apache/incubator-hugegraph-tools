@@ -28,15 +28,11 @@ import com.baidu.hugegraph.util.E;
 
 public abstract class Directory {
 
-    private String directory;
+    private final String directory;
 
     public Directory(String directory) {
         E.checkArgument(directory != null && !directory.isEmpty(),
-                        "Directory of backup/restore can't be null or empty");
-        this.directory = directory;
-    }
-
-    public void directory(String directory) {
+                        "Directory can't be null or empty");
         this.directory = directory;
     }
 

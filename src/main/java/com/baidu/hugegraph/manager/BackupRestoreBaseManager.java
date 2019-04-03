@@ -21,7 +21,6 @@ package com.baidu.hugegraph.manager;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 
 import com.baidu.hugegraph.api.API;
@@ -164,6 +162,14 @@ public class BackupRestoreBaseManager extends RetryManager {
         return is;
     }
 
+    protected String fileWithPrefix(HugeType type) {
+        List<String> files = this.filesWithPrefix(type);
+        E.checkState(files.size() == 1,
+                     "There should be only one file of '%s', but got '%s'",
+                     type, files.size());
+        return files.get(0);
+    }
+
     protected List<String> filesWithPrefix(HugeType type) {
         List<String> files = new ArrayList<>();
         for (String file : this.directory.files()) {
@@ -200,23 +206,6 @@ public class BackupRestoreBaseManager extends RetryManager {
         Printer.printMap(type + " summary", summary);
 
         Printer.printKV("cost time(s)", this.elapseSeconds());
-    }
-
-    protected void write(String file, String type, List<?> list) {
-        Lock lock = locks.lock(file);
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(LBUF_SIZE);
-             FileOutputStream fos = new FileOutputStream(file, false)) {
-            String key = String.format("{\"%s\": ", type);
-            baos.write(key.getBytes(API.CHARSET));
-            this.client.mapper().writeValue(baos, list);
-            baos.write("}\n".getBytes(API.CHARSET));
-
-            fos.write(baos.toByteArray());
-        } catch (Exception e) {
-            Printer.print("Failed to serialize %s: %s", type, e);
-        } finally {
-            lock.unlock();
-        }
     }
 
     @Override

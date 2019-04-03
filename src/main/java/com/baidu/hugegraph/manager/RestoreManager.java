@@ -168,7 +168,7 @@ public class RestoreManager extends BackupRestoreBaseManager {
                 this.propertyKeyCounter.getAndIncrement();
             }
         };
-        String path = this.filesWithPrefix(HugeType.PROPERTY_KEY).get(0);
+        String path = this.fileWithPrefix(HugeType.PROPERTY_KEY);
         this.restore(type, path, consumer);
     }
 
@@ -183,7 +183,7 @@ public class RestoreManager extends BackupRestoreBaseManager {
                 this.vertexLabelCounter.getAndIncrement();
             }
         };
-        String path = this.filesWithPrefix(HugeType.VERTEX_LABEL).get(0);
+        String path = this.fileWithPrefix(HugeType.VERTEX_LABEL);
         this.restore(type, path, consumer);
     }
 
@@ -198,7 +198,7 @@ public class RestoreManager extends BackupRestoreBaseManager {
                 this.edgeLabelCounter.getAndIncrement();
             }
         };
-        String path = this.filesWithPrefix(HugeType.EDGE_LABEL).get(0);
+        String path = this.fileWithPrefix(HugeType.EDGE_LABEL);
         this.restore(type, path, consumer);
     }
 
@@ -213,7 +213,7 @@ public class RestoreManager extends BackupRestoreBaseManager {
                 this.indexLabelCounter.getAndIncrement();
             }
         };
-        String path = this.filesWithPrefix(HugeType.INDEX_LABEL).get(0);
+        String path = this.fileWithPrefix(HugeType.INDEX_LABEL);
         this.restore(type, path, consumer);
     }
 

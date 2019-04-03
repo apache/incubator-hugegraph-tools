@@ -44,7 +44,7 @@ public class HdfsDirectory extends Directory {
 
     public static final String HDFS_PREFIX = "hdfs://";
 
-    private Map<String, String> conf;
+    private final Map<String, String> conf;
 
     public HdfsDirectory(String directory, Map<String, String> conf) {
         super(directory);
