@@ -389,7 +389,7 @@ public class SubCommands {
         public String directory = "./";
 
         @Parameter(names = {"--log", "-l"}, arity = 1,
-                description = "Directory of log")
+                   description = "Directory of log")
         public String logDir = "./";
 
         @ParametersDelegate

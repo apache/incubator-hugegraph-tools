@@ -56,19 +56,16 @@ public class HdfsDirectory extends Directory {
         for (Map.Entry<String, String> entry : this.conf.entrySet()) {
             conf.set(entry.getKey(), entry.getValue());
         }
-        FileSystem fs;
         try {
-            fs = FileSystem.get(conf);
+            return FileSystem.get(conf);
         } catch (IOException e) {
             throw new ClientException("Failed to access HDFS with " +
                                       "configuration %s", this.conf, e);
         }
-        return fs;
     }
 
     @Override
     public List<String> files() {
-        List<String> files = new ArrayList<>();
         FileSystem fs = this.fileSystem();
         FileStatus[] statuses;
         try {
@@ -77,6 +74,7 @@ public class HdfsDirectory extends Directory {
             throw new ToolsException("Failed to get file list in directory " +
                                      "'%s'", e, this.directory());
         }
+        List<String> files = new ArrayList<>();
         for (FileStatus status : statuses) {
             if (status.isFile()) {
                 files.add(status.getPath().getName());
