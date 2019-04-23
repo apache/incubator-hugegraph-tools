@@ -72,6 +72,14 @@ public class LocalDirectory extends Directory {
 
     @Override
     public InputStream inputStream(String file) {
+        if (file.endsWith(this.suffix())) {
+            return this.zipInputStream(file);
+        }
+        // Keep compatible with version before 1.3.0, which backup data no zip
+        return this.textInputStream(file);
+    }
+
+    private ZipInputStream zipInputStream(String file) {
         String path = Paths.get(this.directory(), file).toString();
         InputStream is = null;
         ZipInputStream zis;
@@ -86,6 +94,16 @@ public class LocalDirectory extends Directory {
                                       e, path);
         }
         return zis;
+    }
+
+    private InputStream textInputStream(String file) {
+        String path = Paths.get(this.directory(), file).toString();
+        try {
+            return new FileInputStream(path);
+        } catch (IOException e) {
+            throw new ClientException("Failed to read from local file: %s",
+                                      e, path);
+        }
     }
 
     @Override
@@ -105,6 +123,13 @@ public class LocalDirectory extends Directory {
                                       e, path);
         }
         return zos;
+    }
+
+    public static LocalDirectory constructDir(String directory, String graph) {
+        if (directory == null || directory.isEmpty()) {
+            directory = "./" + graph;
+        }
+        return new LocalDirectory(directory);
     }
 
     public static void ensureDirectoryExist(String directory) {

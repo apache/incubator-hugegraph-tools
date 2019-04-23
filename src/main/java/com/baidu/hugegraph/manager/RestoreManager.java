@@ -91,9 +91,11 @@ public class RestoreManager extends BackupRestoreBaseManager {
     }
 
     private void restoreVertices(HugeType type) {
+        Printer.print("Vertices restore started");
         this.initPrimaryKeyVLs();
         List<String> files = this.filesWithPrefix(HugeType.VERTEX);
         printRestoreFiles(type, files);
+        Printer.printInBackward("Vertices has been restored: ");
         BiConsumer<String, String> consumer = (t, l) -> {
             List<Vertex> vertices = this.readList(t, Vertex.class, l);
             int size = vertices.size();
@@ -108,6 +110,7 @@ public class RestoreManager extends BackupRestoreBaseManager {
                 this.retry(() -> this.client.graph().addVertices(subVertices),
                            "restoring vertices");
                 this.vertexCounter.getAndAdd(toIndex - i);
+                Printer.printInBackward(this.vertexCounter.get());
             }
         };
         for (String file : files) {
@@ -121,12 +124,17 @@ public class RestoreManager extends BackupRestoreBaseManager {
             });
         }
         this.awaitTasks();
+        Printer.print("%d", this.vertexCounter.get());
+        Printer.print("Vertices restore finished: %d",
+                      this.vertexCounter.get());
     }
 
     private void restoreEdges(HugeType type) {
+        Printer.print("Edges restore started");
         this.initPrimaryKeyVLs();
         List<String> files = this.filesWithPrefix(HugeType.EDGE);
         printRestoreFiles(type, files);
+        Printer.printInBackward("Edges has been restored: ");
         BiConsumer<String, String> consumer = (t, l) -> {
             List<Edge> edges = this.readList(t, Edge.class, l);
             int size = edges.size();
@@ -142,6 +150,7 @@ public class RestoreManager extends BackupRestoreBaseManager {
                 this.retry(() -> this.client.graph().addEdges(subEdges, false),
                            "restoring edges");
                 this.edgeCounter.getAndAdd(toIndex - i);
+                Printer.printInBackward(this.edgeCounter.get());
             }
         };
         for (String file : files) {
@@ -155,9 +164,12 @@ public class RestoreManager extends BackupRestoreBaseManager {
             });
         }
         this.awaitTasks();
+        Printer.print("%d", this.edgeCounter.get());
+        Printer.print("Edges restore finished: %d", this.edgeCounter.get());
     }
 
     private void restorePropertyKeys(HugeType type) {
+        Printer.print("Property key restore started");
         BiConsumer<String, String> consumer = (t, l) -> {
             for (PropertyKey pk : this.readList(t, PropertyKey.class, l)) {
                 if (this.mode == GraphMode.MERGING) {
@@ -170,9 +182,12 @@ public class RestoreManager extends BackupRestoreBaseManager {
         };
         String path = this.fileWithPrefix(HugeType.PROPERTY_KEY);
         this.restore(type, path, consumer);
+        Printer.print("Property key restore finished: %d",
+                      this.propertyKeyCounter.get());
     }
 
     private void restoreVertexLabels(HugeType type) {
+        Printer.print("Vertex label restore started");
         BiConsumer<String, String> consumer = (t, l) -> {
             for (VertexLabel vl : this.readList(t, VertexLabel.class, l)) {
                 if (this.mode == GraphMode.MERGING) {
@@ -185,9 +200,12 @@ public class RestoreManager extends BackupRestoreBaseManager {
         };
         String path = this.fileWithPrefix(HugeType.VERTEX_LABEL);
         this.restore(type, path, consumer);
+        Printer.print("Vertex label restore finished: %d",
+                      this.vertexLabelCounter.get());
     }
 
     private void restoreEdgeLabels(HugeType type) {
+        Printer.print("Edge label restore started");
         BiConsumer<String, String> consumer = (t, l) -> {
             for (EdgeLabel el : this.readList(t, EdgeLabel.class, l)) {
                 if (this.mode == GraphMode.MERGING) {
@@ -200,9 +218,12 @@ public class RestoreManager extends BackupRestoreBaseManager {
         };
         String path = this.fileWithPrefix(HugeType.EDGE_LABEL);
         this.restore(type, path, consumer);
+        Printer.print("Edge label restore finished: %d",
+                      this.edgeLabelCounter.get());
     }
 
     private void restoreIndexLabels(HugeType type) {
+        Printer.print("Index label restore started");
         BiConsumer<String, String> consumer = (t, l) -> {
             for (IndexLabel il : this.readList(t, IndexLabel.class, l)) {
                 if (this.mode == GraphMode.MERGING) {
@@ -215,6 +236,8 @@ public class RestoreManager extends BackupRestoreBaseManager {
         };
         String path = this.fileWithPrefix(HugeType.INDEX_LABEL);
         this.restore(type, path, consumer);
+        Printer.print("Index label restore finished: %d",
+                      this.indexLabelCounter.get());
     }
 
     private void restore(HugeType type, String file,
@@ -253,6 +276,6 @@ public class RestoreManager extends BackupRestoreBaseManager {
 
     private void printRestoreFiles(HugeType type, List<String> files) {
         Printer.print("Restoring %s ...", type);
-        Printer.printList("  files", files);
+        Printer.printList("files", files);
     }
 }

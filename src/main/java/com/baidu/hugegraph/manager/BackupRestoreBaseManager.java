@@ -48,7 +48,6 @@ import com.baidu.hugegraph.util.E;
 import com.google.common.collect.ImmutableMap;
 
 import static com.baidu.hugegraph.base.Directory.closeAndIgnoreException;
-import static com.baidu.hugegraph.base.HdfsDirectory.HDFS_PREFIX;
 
 public class BackupRestoreBaseManager extends RetryManager {
 
@@ -81,15 +80,7 @@ public class BackupRestoreBaseManager extends RetryManager {
         this.retry(cmd.retry());
         LocalDirectory.ensureDirectoryExist(cmd.logDir());
         this.logDir(cmd.logDir());
-        String directory = cmd.directory();
-        E.checkArgument(directory != null && !directory.isEmpty(),
-                        "Directory of backup/restore can't be null or empty");
-        this.hdfsConf = cmd.hdfsConf();
-        if (directory.startsWith(HDFS_PREFIX)) {
-            this.directory = new HdfsDirectory(directory, this.hdfsConf);
-        } else {
-            this.directory = new LocalDirectory(directory);
-        }
+        this.directory = this.directory(cmd.directory(), cmd.hdfsConf());
     }
 
     public void logDir(String logDir) {
@@ -162,6 +153,15 @@ public class BackupRestoreBaseManager extends RetryManager {
         return is;
     }
 
+    private Directory directory(String dir, Map<String, String> hdfsConf) {
+        // Local FS directory
+        if (hdfsConf == null || hdfsConf.isEmpty()) {
+            return LocalDirectory.constructDir(dir, this.graph());
+        }
+        // HDFS directory
+        return HdfsDirectory.constructDir(dir, this.graph(), hdfsConf);
+    }
+
     protected String fileWithPrefix(HugeType type) {
         List<String> files = this.filesWithPrefix(type);
         E.checkState(files.size() == 1,
@@ -196,6 +196,7 @@ public class BackupRestoreBaseManager extends RetryManager {
     }
 
     protected void printSummary(String type) {
+        Printer.print("===============================================");
         Map<String, Long> summary = ImmutableMap.<String, Long>builder()
                 .put("property key number", this.propertyKeyCounter.longValue())
                 .put("vertex label number", this.vertexLabelCounter.longValue())
