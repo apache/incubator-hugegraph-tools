@@ -347,7 +347,7 @@ public class SubCommands {
 
         @Parameter(names = {"--log", "-l"}, arity = 1,
                    description = "Directory of log")
-        public String logDir = "./backup-log";
+        public String logDir = "./logs";
 
         @ParametersDelegate
         private HugeTypes types = new HugeTypes();

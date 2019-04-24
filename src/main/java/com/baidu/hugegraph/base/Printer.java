@@ -60,7 +60,7 @@ public class Printer {
 
     public static void printInBackward(String message) {
         System.out.print(message);
-        printInBackward(0);
+        printInBackward(0L);
     }
 
     public static void printInBackward(long count) {

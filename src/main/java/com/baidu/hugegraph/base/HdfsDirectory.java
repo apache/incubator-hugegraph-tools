@@ -160,8 +160,8 @@ public class HdfsDirectory extends Directory {
                                              Map<String, String> hdfsConf) {
         String hdfsFs = hdfsConf.get(HDFS_FS_DEFAULT_NAME);
         E.checkArgument(hdfsFs != null && !hdfsFs.isEmpty(),
-                        "'fs.default.name' can not be null or empty " +
-                        "when try to backup to HDFS");
+                        "'%s' can not be null or empty " +
+                        "when try to backup to HDFS", HDFS_FS_DEFAULT_NAME);
         if (directory == null || directory.isEmpty()) {
             if (hdfsFs.endsWith("/")) {
                 directory = hdfsFs + graph;
