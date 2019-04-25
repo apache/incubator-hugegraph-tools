@@ -51,6 +51,7 @@ import static com.baidu.hugegraph.base.Directory.closeAndIgnoreException;
 
 public class BackupRestoreBaseManager extends RetryManager {
 
+    public static final int BATCH = 500;
     protected static final int LBUF_SIZE = 1024;
 
     protected AtomicLong propertyKeyCounter = new AtomicLong(0);

@@ -134,7 +134,7 @@ public class HdfsDirectory extends Directory {
 
     @Override
     public OutputStream outputStream(String file, boolean override) {
-        String path = this.path(file);
+        String path = this.path(file + this.suffix());
         FileSystem fs = this.fileSystem();
         FSDataOutputStream os = null;
         ZipOutputStream zos = null;

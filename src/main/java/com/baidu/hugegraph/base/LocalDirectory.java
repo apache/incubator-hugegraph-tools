@@ -108,7 +108,8 @@ public class LocalDirectory extends Directory {
 
     @Override
     public OutputStream outputStream(String file, boolean override) {
-        String path = Paths.get(this.directory(), file).toString();
+        String path = Paths.get(this.directory(), file + this.suffix())
+                           .toString();
         FileOutputStream os = null;
         ZipOutputStream zos = null;
         try {

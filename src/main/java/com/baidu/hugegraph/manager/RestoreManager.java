@@ -40,7 +40,6 @@ import com.baidu.hugegraph.util.E;
 
 public class RestoreManager extends BackupRestoreBaseManager {
 
-    private static final int BATCH_SIZE = 500;
     private GraphMode mode = null;
 
     private Map<String, Long> primaryKeyVLs = null;
@@ -99,8 +98,8 @@ public class RestoreManager extends BackupRestoreBaseManager {
         BiConsumer<String, String> consumer = (t, l) -> {
             List<Vertex> vertices = this.readList(t, Vertex.class, l);
             int size = vertices.size();
-            for (int i = 0; i < size; i += BATCH_SIZE) {
-                int toIndex = Math.min(i + BATCH_SIZE, size);
+            for (int i = 0; i < size; i += BATCH) {
+                int toIndex = Math.min(i + BATCH, size);
                 List<Vertex> subVertices = vertices.subList(i, toIndex);
                 for (Vertex vertex : subVertices) {
                     if (this.primaryKeyVLs.containsKey(vertex.label())) {
@@ -138,8 +137,8 @@ public class RestoreManager extends BackupRestoreBaseManager {
         BiConsumer<String, String> consumer = (t, l) -> {
             List<Edge> edges = this.readList(t, Edge.class, l);
             int size = edges.size();
-            for (int i = 0; i < size; i += BATCH_SIZE) {
-                int toIndex = Math.min(i + BATCH_SIZE, size);
+            for (int i = 0; i < size; i += BATCH) {
+                int toIndex = Math.min(i + BATCH, size);
                 List<Edge> subEdges = edges.subList(i, toIndex);
                 /*
                  * Edge id is concat using source and target vertex id and
