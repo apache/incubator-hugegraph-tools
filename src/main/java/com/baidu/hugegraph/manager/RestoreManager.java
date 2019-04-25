@@ -98,9 +98,9 @@ public class RestoreManager extends BackupRestoreBaseManager {
         BiConsumer<String, String> consumer = (t, l) -> {
             List<Vertex> vertices = this.readList(t, Vertex.class, l);
             int size = vertices.size();
-            for (int i = 0; i < size; i += BATCH) {
-                int toIndex = Math.min(i + BATCH, size);
-                List<Vertex> subVertices = vertices.subList(i, toIndex);
+            for (int start = 0; start < size; start += BATCH) {
+                int end = Math.min(start + BATCH, size);
+                List<Vertex> subVertices = vertices.subList(start, end);
                 for (Vertex vertex : subVertices) {
                     if (this.primaryKeyVLs.containsKey(vertex.label())) {
                         vertex.id(null);
@@ -108,7 +108,7 @@ public class RestoreManager extends BackupRestoreBaseManager {
                 }
                 this.retry(() -> this.client.graph().addVertices(subVertices),
                            "restoring vertices");
-                this.vertexCounter.getAndAdd(toIndex - i);
+                this.vertexCounter.getAndAdd(end - start);
                 Printer.printInBackward(this.vertexCounter.get());
             }
         };
@@ -137,9 +137,9 @@ public class RestoreManager extends BackupRestoreBaseManager {
         BiConsumer<String, String> consumer = (t, l) -> {
             List<Edge> edges = this.readList(t, Edge.class, l);
             int size = edges.size();
-            for (int i = 0; i < size; i += BATCH) {
-                int toIndex = Math.min(i + BATCH, size);
-                List<Edge> subEdges = edges.subList(i, toIndex);
+            for (int start = 0; start < size; start += BATCH) {
+                int end = Math.min(start + BATCH, size);
+                List<Edge> subEdges = edges.subList(start, end);
                 /*
                  * Edge id is concat using source and target vertex id and
                  * vertices of primary key id strategy might have changed
@@ -148,7 +148,7 @@ public class RestoreManager extends BackupRestoreBaseManager {
                 this.updateVertexIdInEdge(subEdges);
                 this.retry(() -> this.client.graph().addEdges(subEdges, false),
                            "restoring edges");
-                this.edgeCounter.getAndAdd(toIndex - i);
+                this.edgeCounter.getAndAdd(end - start);
                 Printer.printInBackward(this.edgeCounter.get());
             }
         };

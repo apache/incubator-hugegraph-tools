@@ -230,13 +230,7 @@ public class BackupManager extends BackupRestoreBaseManager {
             if (vertexList == null || vertexList.isEmpty()) {
                 return;
             }
-            int length = vertexList.size();
-            for (int startIndex = 0; startIndex < length; startIndex += BATCH) {
-                int endIndex = startIndex + BATCH;
-                endIndex = endIndex > length ? length : endIndex;
-                this.backup(HugeType.VERTEX, suffix.get(),
-                            vertexList.subList(startIndex, endIndex));
-            }
+            this.backup(HugeType.VERTEX, suffix.get(), vertexList);
 
             this.vertexCounter.getAndAdd(vertexList.size());
             Printer.printInBackward(this.vertexCounter.get());
@@ -262,13 +256,7 @@ public class BackupManager extends BackupRestoreBaseManager {
             if (edgeList == null || edgeList.isEmpty()) {
                 return;
             }
-            int length = edgeList.size();
-            for (int startIndex = 0; startIndex < length; startIndex += BATCH) {
-                int endIndex = startIndex + BATCH;
-                endIndex = endIndex > length ? length : endIndex;
-                this.backup(HugeType.EDGE, suffix.get(),
-                            edgeList.subList(startIndex, endIndex));
-            }
+            this.backup(HugeType.EDGE, suffix.get(), edgeList);
 
             this.edgeCounter.getAndAdd(edgeList.size());
             Printer.printInBackward(this.edgeCounter.get());
@@ -282,7 +270,11 @@ public class BackupManager extends BackupRestoreBaseManager {
 
     private void backup(HugeType type, int number, List<?> list) {
         String file = type.string() + number;
-        this.write(file, type, list);
+        int size = list.size();
+        for (int start = 0; start < size; start += BATCH) {
+            int end = Math.min(start + BATCH, size);
+            this.write(file, type, list.subList(start, end));
+        }
     }
 
     private void exceptionHandler(ToolsException e, HugeType type,
