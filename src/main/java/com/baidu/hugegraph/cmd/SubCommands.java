@@ -240,6 +240,9 @@ public class SubCommands {
         private Limit limit = new Limit();
 
         public String status() {
+            if (this.status.status == null) {
+                return null;
+            }
             return this.status.status.toUpperCase();
         }
 
