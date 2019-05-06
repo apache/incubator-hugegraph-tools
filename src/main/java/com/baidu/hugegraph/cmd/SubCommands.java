@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +33,7 @@ import com.baidu.hugegraph.manager.TasksManager;
 import com.baidu.hugegraph.structure.constant.GraphMode;
 import com.baidu.hugegraph.structure.constant.HugeType;
 import com.baidu.hugegraph.util.E;
+import com.baidu.hugegraph.util.InsertionOrderUtil;
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.IStringConverter;
@@ -49,7 +49,7 @@ public class SubCommands {
     private Map<String, Object> commands;
 
     public SubCommands() {
-        this.commands = new LinkedHashMap<>();
+        this.commands = InsertionOrderUtil.newMap();
         this.initSubCommands();
     }
 
