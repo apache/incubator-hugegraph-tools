@@ -98,8 +98,9 @@ public class HdfsDirectory extends Directory {
                                  "The directory does not exist and created " +
                                  "failed: '%s'", path.toString());
                 } else {
-                    throw new ToolsException("The directory does not exist: " +
-                                             "'%s'", path.toString());
+                    E.checkState(false,
+                                 "The directory does not exist: '%s'",
+                                 path.toString());
                 }
             }
         } catch (IOException e) {

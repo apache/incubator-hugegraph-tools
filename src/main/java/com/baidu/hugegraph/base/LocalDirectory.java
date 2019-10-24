@@ -156,8 +156,8 @@ public class LocalDirectory extends Directory {
                              "The directory does not exist and created " +
                              "failed: '%s'", file.getAbsolutePath());
             } else {
-                throw new ToolsException("The directory does not exist: '%s'",
-                                         file.getAbsolutePath());
+                E.checkState(false, "The directory does not exist: '%s'",
+                             file.getAbsolutePath());
             }
         }
     }
