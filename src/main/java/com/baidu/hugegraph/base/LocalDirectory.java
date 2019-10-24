@@ -153,10 +153,10 @@ public class LocalDirectory extends Directory {
         } else {
             if (create) {
                 E.checkState(file.mkdirs(),
-                             "Directory '%s' not exists and created failed",
-                             file.getAbsolutePath());
+                             "The directory does not exist and created " +
+                             "failed: '%s'", file.getAbsolutePath());
             } else {
-                throw new ToolsException("Directory '%s' not exists",
+                throw new ToolsException("The directory does not exist: '%s'",
                                          file.getAbsolutePath());
             }
         }
@@ -165,7 +165,8 @@ public class LocalDirectory extends Directory {
     private static void removeDirectory(String directory) {
         File dir = new File(directory);
         E.checkState(dir.exists() && dir.isDirectory(),
-                     "Directory '%s' not exists", dir.getAbsolutePath());
+                     "The directory does not exist: '%s'",
+                     dir.getAbsolutePath());
         try {
             FileUtils.deleteDirectory(dir);
         } catch (IOException e) {

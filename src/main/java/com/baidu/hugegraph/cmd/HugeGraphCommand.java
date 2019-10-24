@@ -168,7 +168,7 @@ public class HugeGraphCommand {
                 }
                 this.url(migrate.sourceUrl());
                 this.graph(migrate.sourceGraph());
-                backup = migrate2Backup(migrate);
+                backup = convMigrate2Backup(migrate);
                 backupManager = manager(BackupManager.class);
                 backupManager.init(backup);
                 backupManager.backup(backup.types());
@@ -188,7 +188,7 @@ public class HugeGraphCommand {
                 Printer.print("Graph '%s' start restore in mode '%s'!",
                               migrate.targetGraph(), migrate.mode());
                 String directory = backupManager.directory().directory();
-                restore = migrate2Restore(migrate, directory);
+                restore = convMigrate2Restore(migrate, directory);
                 restoreManager = manager(RestoreManager.class);
                 restoreManager.init(restore);
                 restoreManager.mode(mode);
@@ -320,7 +320,7 @@ public class HugeGraphCommand {
         }
     }
 
-    private static SubCommands.Backup migrate2Backup(
+    private static SubCommands.Backup convMigrate2Backup(
                                       SubCommands.Migrate migrate) {
         SubCommands.Backup backup = new SubCommands.Backup();
         backup.splitSize(migrate.splitSize());
@@ -332,7 +332,7 @@ public class HugeGraphCommand {
         return backup;
     }
 
-    private static SubCommands.Restore migrate2Restore(
+    private static SubCommands.Restore convMigrate2Restore(
                                        SubCommands.Migrate migrate,
                                        String directory) {
         SubCommands.Restore restore = new SubCommands.Restore();

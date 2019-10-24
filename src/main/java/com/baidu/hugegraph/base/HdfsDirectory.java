@@ -95,11 +95,11 @@ public class HdfsDirectory extends Directory {
             } else {
                 if (create) {
                     E.checkState(fs.mkdirs(path),
-                                 "Directory '%s' not exists and created " +
-                                 "failed", path.toString());
+                                 "The directory does not exist and created " +
+                                 "failed: '%s'", path.toString());
                 } else {
-                    throw new ToolsException("Directory '%s' not exists",
-                                             path.toString());
+                    throw new ToolsException("The directory does not exist: " +
+                                             "'%s'", path.toString());
                 }
             }
         } catch (IOException e) {
@@ -115,7 +115,8 @@ public class HdfsDirectory extends Directory {
         try {
             E.checkState(fs.exists(path) &&
                          fs.getFileStatus(path).isDirectory(),
-                         "Directory '%s' not exists", this.directory());
+                         "The directory does not exist: '%s'",
+                         this.directory());
             fs.delete(path, true);
         } catch (IOException e) {
             throw new ToolsException("Failed to delete directory '%s'", path);
