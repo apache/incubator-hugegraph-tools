@@ -41,6 +41,7 @@ import com.baidu.hugegraph.util.E;
 public class RestoreManager extends BackupRestoreBaseManager {
 
     private GraphMode mode = null;
+    private boolean remove;
 
     private Map<String, Long> primaryKeyVLs = null;
 
@@ -51,6 +52,7 @@ public class RestoreManager extends BackupRestoreBaseManager {
     public void init(SubCommands.Restore restore) {
         super.init(restore);
         this.ensureDirectoryExist(false);
+        this.remove = restore.remove();
     }
 
     public void mode(GraphMode mode) {
@@ -87,6 +89,9 @@ public class RestoreManager extends BackupRestoreBaseManager {
         }
         this.shutdown(this.type());
         this.printSummary();
+        if (this.remove) {
+            this.removeDirectory();
+        }
     }
 
     private void restoreVertices(HugeType type) {

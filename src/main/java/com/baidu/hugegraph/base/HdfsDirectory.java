@@ -109,6 +109,20 @@ public class HdfsDirectory extends Directory {
     }
 
     @Override
+    public void removeDirectory() {
+        FileSystem fs = this.fileSystem();
+        Path path = new Path(this.directory());
+        try {
+            E.checkState(fs.exists(path) &&
+                         fs.getFileStatus(path).isDirectory(),
+                         "Directory '%s' not exists", this.directory());
+            fs.delete(path, true);
+        } catch (IOException e) {
+            throw new ToolsException("Failed to delete directory '%s'", path);
+        }
+    }
+
+    @Override
     public String suffix() {
         return ".zip";
     }
