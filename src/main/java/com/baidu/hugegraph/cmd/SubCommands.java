@@ -173,16 +173,16 @@ public class SubCommands {
 
         @Parameter(names = {"--target-url"}, arity = 1,
                    description = "The target graph url to migrate")
-        public String targetUrl = "http://127.0.0.1:8080";
+        public String targetUrl = "http://127.0.0.1:8081";
 
         @Parameter(names = {"--target-graph"}, arity = 1,
                    description = "The target graph to migrate")
-        public String targetGraph = "hugegraph1";
+        public String targetGraph = "hugegraph";
 
         @Parameter(names = {"--graph-mode", "-m"}, arity = 1,
                    converter = GraphModeConverter.class,
-                   description = "Graph mode, include: " +
-                                 "[RESTORING, MERGING]")
+                   description = "Mode used when migrating to target graph, " +
+                                 "include: [RESTORING, MERGING]")
         public GraphMode mode = GraphMode.RESTORING;
 
         @Parameter(names = {"--remove"},
