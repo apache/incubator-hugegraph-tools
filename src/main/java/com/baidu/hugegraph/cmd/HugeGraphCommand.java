@@ -336,7 +336,7 @@ public class HugeGraphCommand {
                                        SubCommands.Migrate migrate,
                                        String directory) {
         SubCommands.Restore restore = new SubCommands.Restore();
-        restore.remove(migrate.remove());
+        restore.clean(migrate.clean());
         restore.directory(directory);
         restore.logDir(migrate.logDir());
         restore.types(migrate.types());

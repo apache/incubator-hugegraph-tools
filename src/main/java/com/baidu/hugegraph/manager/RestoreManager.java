@@ -52,7 +52,7 @@ public class RestoreManager extends BackupRestoreBaseManager {
     public void init(SubCommands.Restore restore) {
         super.init(restore);
         this.ensureDirectoryExist(false);
-        this.remove = restore.remove();
+        this.remove = restore.clean();
     }
 
     public void mode(GraphMode mode) {

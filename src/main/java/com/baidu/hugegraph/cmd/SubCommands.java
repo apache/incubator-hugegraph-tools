@@ -134,16 +134,17 @@ public class SubCommands {
                                      "if needed. For exmaple:" +
                                      "-Dfs.default.name=hdfs://localhost:9000")
     public static class Restore extends BackupRestore {
-        @Parameter(names = {"--remove"},
-                   description = "Whether to remove graph schema/data")
-        public boolean remove = false;
+        @Parameter(names = {"--clean"},
+                   description = "Whether to remove the directory of " +
+                                 "graph data after restored")
+        public boolean clean = false;
 
-        public boolean remove() {
-            return this.remove;
+        public boolean clean() {
+            return this.clean;
         }
 
-        public void remove(boolean remove) {
-            this.remove = remove;
+        public void clean(boolean clean) {
+            this.clean = clean;
         }
     }
 
@@ -185,9 +186,10 @@ public class SubCommands {
                                  "include: [RESTORING, MERGING]")
         public GraphMode mode = GraphMode.RESTORING;
 
-        @Parameter(names = {"--remove"},
-                   description = "Whether to remove graph schema/data")
-        public boolean remove = true;
+        @Parameter(names = {"--clean"},
+                   description = "Whether to remove the directory of " +
+                                 "graph data after restored")
+        public boolean clean = true;
 
         public String sourceUrl() {
             return this.sourceUrl;
@@ -209,8 +211,8 @@ public class SubCommands {
             return this.mode;
         }
 
-        public boolean remove() {
-            return this.remove;
+        public boolean clean() {
+            return this.clean;
         }
     }
 
