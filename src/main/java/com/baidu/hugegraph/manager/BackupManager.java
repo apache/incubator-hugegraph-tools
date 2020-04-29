@@ -67,14 +67,19 @@ public class BackupManager extends BackupRestoreBaseManager {
 
     public static final int BACKUP_DEFAULT_TIMEOUT = 120;
 
+    private static final String BACKEND = "backend";
+    private static final String MEMORY = "memory";
+
     private static final AtomicInteger nextId = new AtomicInteger(0);
     private static final ThreadLocal<Integer> suffix =
             ThreadLocal.withInitial(nextId::getAndIncrement);
 
     private long splitSize;
+    private String backend;
 
     public BackupManager(ToolClient.ConnectionInfo info) {
         super(info, "backup");
+        this.backend = this.client.graphs().getGraph(this.graph()).get(BACKEND);
     }
 
     public void init(SubCommands.Backup backup) {
@@ -218,12 +223,16 @@ public class BackupManager extends BackupRestoreBaseManager {
     private void backupVertexShard(Shard shard) {
         String desc = String.format("backing up vertices[shard:%s]", shard);
         Vertices vertices = null;
-        String page = "";
+        String page = this.initPage();
         TraverserManager g = client.traverser();
         do {
-            String finalPage = page;
+            String p = page;
             try {
-                vertices = retry(() -> g.vertices(shard, finalPage), desc);
+                if (page == null) {
+                    vertices = retry(() -> g.vertices(shard), desc);
+                } else {
+                    vertices = retry(() -> g.vertices(shard, p), desc);
+                }
             } catch (ToolsException e) {
                 this.exceptionHandler(e, HugeType.VERTEX, shard);
             }
@@ -244,19 +253,23 @@ public class BackupManager extends BackupRestoreBaseManager {
     private void backupEdgeShard(Shard shard) {
         String desc = String.format("backing up edges[shard %s]", shard);
         Edges edges = null;
-        List<Edge> edgeList;
-        String page = "";
+        String page = this.initPage();
+        TraverserManager g = client.traverser();
         do {
             try {
                 String p = page;
-                edges = retry(() -> client.traverser().edges(shard, p), desc);
+                if (page == null) {
+                    edges = retry(() -> g.edges(shard), desc);
+                } else {
+                    edges = retry(() -> g.edges(shard, p), desc);
+                }
             } catch (ToolsException e) {
                 this.exceptionHandler(e, HugeType.EDGE, shard);
             }
             if (edges == null) {
                 return;
             }
-            edgeList = edges.results();
+            List<Edge> edgeList = edges.results();
             if (edgeList == null || edgeList.isEmpty()) {
                 return;
             }
@@ -279,6 +292,10 @@ public class BackupManager extends BackupRestoreBaseManager {
             int end = Math.min(start + BATCH, size);
             this.write(file, type, list.subList(start, end));
         }
+    }
+
+    private String initPage() {
+        return this.backend.equals(MEMORY) ? null : "";
     }
 
     private void exceptionHandler(ToolsException e, HugeType type,
