@@ -524,17 +524,17 @@ public class SubCommands {
     public static class Protocol {
 
         @Parameter(names = {"--protocol"}, arity = 1,
-                validateWith = {ProtocolValidator.class},
-                description = "The Protocol of HugeGraph-Server,allowed values" +
-                              " are: http or https")
+                   validateWith = {ProtocolValidator.class},
+                   description = "The Protocol of HugeGraph-Server,allowed values" +
+                                 " are: http or https")
         public String protocol = "http";
     }
 
     public static class TrustStoreFile {
 
         @Parameter(names = {"--trustStoreFile"}, arity = 1,
-                description = "The path of client truststore file used when https" +
-                              "protocol is enabled")
+                   description = "The path of client truststore file used when https" +
+                                 "protocol is enabled")
         public String trustStoreFile = "";
     }
 
