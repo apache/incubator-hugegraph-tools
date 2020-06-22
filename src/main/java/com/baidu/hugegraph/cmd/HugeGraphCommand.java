@@ -68,10 +68,12 @@ public class HugeGraphCommand {
     private SubCommands.Protocol protocol = new SubCommands.Protocol();
 
     @ParametersDelegate
-    private SubCommands.TrustStoreFile trustStoreFile = new SubCommands.TrustStoreFile();
+    private SubCommands.TrustStoreFile trustStoreFile = new SubCommands.
+                                                            TrustStoreFile();
 
     @ParametersDelegate
-    private SubCommands.TrustStorePassword trustStorePassword = new SubCommands.TrustStorePassword();
+    private SubCommands.TrustStorePassword trustStorePassword = new SubCommands.
+                                                                    TrustStorePassword();
 
     public HugeGraphCommand() {
         this.subCommands = new SubCommands();
@@ -138,8 +140,8 @@ public class HugeGraphCommand {
         return this.trustStorePassword.trustStorePassword;
     }
 
-    public void TrustStorePassword(String TrustStorePassword) {
-        this.trustStorePassword.trustStorePassword = TrustStorePassword;
+    public void trustStorePassword(String trustStorePassword) {
+        this.trustStorePassword.trustStorePassword = trustStorePassword;
     }
 
     public JCommander jCommander() {

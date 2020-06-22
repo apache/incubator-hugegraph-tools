@@ -525,14 +525,14 @@ public class SubCommands {
 
         @Parameter(names = {"--protocol"}, arity = 1,
                    validateWith = {ProtocolValidator.class},
-                   description = "The Protocol of HugeGraph-Server,allowed values" +
+                   description = "The Protocol of HugeGraph-Server, allowed values" +
                                  " are: http or https")
         public String protocol = "http";
     }
 
     public static class TrustStoreFile {
 
-        @Parameter(names = {"--trustStoreFile"}, arity = 1,
+        @Parameter(names = {"--trust-store-file"}, arity = 1,
                    description = "The path of client truststore file used when https" +
                                  "protocol is enabled")
         public String trustStoreFile = "";
@@ -540,9 +540,9 @@ public class SubCommands {
 
     public static class TrustStorePassword {
 
-        @Parameter(names = {"--trustStorePassword"}, arity = 1,
-                description = "The password of the path of the client truststore " +
-                              "file used when the https protocol is enabled")
+        @Parameter(names = {"--trust-store-password"}, arity = 1,
+                   description = "The password of the path of the client truststore " +
+                                 "file used when the https protocol is enabled")
         public String trustStorePassword = "";
     }
 
@@ -778,8 +778,8 @@ public class SubCommands {
         public void validate(String name, String value) {
             if (!SSL_PROTOCOL.contains(value.toUpperCase())) {
                 throw new ParameterException(String.format(
-                        "Invalid --protocol '%s', valid value is %s",
-                        value, SSL_PROTOCOL));
+                          "Invalid --protocol '%s', valid value is %s", value,
+                          SSL_PROTOCOL));
             }
         }
     }
