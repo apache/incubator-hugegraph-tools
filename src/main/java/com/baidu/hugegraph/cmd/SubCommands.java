@@ -778,8 +778,8 @@ public class SubCommands {
         public void validate(String name, String value) {
             if (!SSL_PROTOCOL.contains(value.toUpperCase())) {
                 throw new ParameterException(String.format(
-                          "Invalid --protocol '%s', valid value is %s", value,
-                          SSL_PROTOCOL));
+                          "Invalid --protocol '%s', valid value is %s",
+                          value, SSL_PROTOCOL));
             }
         }
     }
