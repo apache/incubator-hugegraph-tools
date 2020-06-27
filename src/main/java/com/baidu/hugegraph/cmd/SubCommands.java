@@ -525,15 +525,15 @@ public class SubCommands {
 
         @Parameter(names = {"--protocol"}, arity = 1,
                    validateWith = {ProtocolValidator.class},
-                   description = "The Protocol of HugeGraph-Server, allowed values" +
-                                 " are: http or https")
+                   description = "The Protocol of HugeGraph-Server, allowed values " +
+                                 "are: http or https")
         public String protocol = "http";
     }
 
     public static class TrustStoreFile {
 
         @Parameter(names = {"--trust-store-file"}, arity = 1,
-                   description = "The path of client truststore file used when https" +
+                   description = "The path of client truststore file used when https " +
                                  "protocol is enabled")
         public String trustStoreFile = "";
     }
@@ -774,6 +774,7 @@ public class SubCommands {
         private static final Set<String> SSL_PROTOCOL = ImmutableSet.of(
                 "HTTP", "HTTPS"
         );
+
         @Override
         public void validate(String name, String value) {
             if (!SSL_PROTOCOL.contains(value.toUpperCase())) {

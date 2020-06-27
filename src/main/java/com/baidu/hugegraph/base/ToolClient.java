@@ -33,18 +33,17 @@ public class ToolClient {
     private ObjectMapper mapper;
 
     public ToolClient(ConnectionInfo info) {
-        if (info.protocol.equals("https")) {
-            this.client = new HugeClient(info.url, info.graph, info.username,
-                                         info.password, info.timeout, info.protocol,
-                                         info.trustStoreFile, info.trustStorePassword);
-        } else {
-            if (info.username != null) {
-                this.client = new HugeClient(info.url, info.graph, info.username,
-                                             info.password, info.timeout);
-            } else {
-                this.client = new HugeClient(info.url, info.graph, info.timeout);
-            }
+        if (info.username == null) {
+            info.username = "";
+            info.password = "";
         }
+        this.client = HugeClient.builder(info.url, info.graph)
+                                .configUser(info.username, info.password)
+                                .configTimeout(info.timeout)
+                                .configSSL(info.protocol, info.trustStoreFile,
+                                           info.trustStorePassword)
+                                .build();
+
         this.mapper = new ObjectMapper();
     }
 
