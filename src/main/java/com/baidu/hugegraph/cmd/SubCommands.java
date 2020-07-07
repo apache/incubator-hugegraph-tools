@@ -771,16 +771,16 @@ public class SubCommands {
 
     public static class ProtocolValidator implements IParameterValidator {
 
-        private static final Set<String> SSL_PROTOCOL = ImmutableSet.of(
+        private static final Set<String> PROTOCOLS = ImmutableSet.of(
                 "HTTP", "HTTPS"
         );
 
         @Override
         public void validate(String name, String value) {
-            if (!SSL_PROTOCOL.contains(value.toUpperCase())) {
+            if (!PROTOCOLS.contains(value.toUpperCase())) {
                 throw new ParameterException(String.format(
                           "Invalid --protocol '%s', valid value is %s",
-                          value, SSL_PROTOCOL));
+                          value, PROTOCOLS));
             }
         }
     }
