@@ -541,8 +541,8 @@ public class SubCommands {
     public static class TrustStorePassword {
 
         @Parameter(names = {"--trust-store-password"}, arity = 1,
-                   description = "The password of the path of the client truststore " +
-                                 "file used when the https protocol is enabled")
+                   description = "The password of the client truststore file " +
+                                 "used when the https protocol is enabled")
         public String trustStorePassword = "";
     }
 
