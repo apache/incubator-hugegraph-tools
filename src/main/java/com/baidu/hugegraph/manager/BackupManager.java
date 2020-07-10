@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 
@@ -56,6 +57,7 @@ import com.baidu.hugegraph.structure.schema.VertexLabel;
 import com.baidu.hugegraph.util.E;
 
 import jersey.repackaged.com.google.common.collect.ImmutableList;
+import jersey.repackaged.com.google.common.collect.ImmutableSet;
 
 public class BackupManager extends BackupRestoreBaseManager {
 
@@ -68,7 +70,9 @@ public class BackupManager extends BackupRestoreBaseManager {
     public static final int BACKUP_DEFAULT_TIMEOUT = 120;
 
     private static final String BACKEND = "backend";
-    private static final String MEMORY = "memory";
+    private static final Set<String> BACKENDS_NO_PAGING =
+                                     ImmutableSet.of("memory");
+    private static final String PAGE_NONE = "";
 
     private static final AtomicInteger nextId = new AtomicInteger(0);
     private static final ThreadLocal<Integer> suffix =
@@ -295,7 +299,7 @@ public class BackupManager extends BackupRestoreBaseManager {
     }
 
     private String initPage() {
-        return this.backend.equals(MEMORY) ? null : "";
+        return BACKENDS_NO_PAGING.contains(this.backend) ? null : PAGE_NONE;
     }
 
     private void exceptionHandler(ToolsException e, HugeType type,
