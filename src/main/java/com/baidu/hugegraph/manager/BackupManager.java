@@ -55,9 +55,8 @@ import com.baidu.hugegraph.structure.schema.IndexLabel;
 import com.baidu.hugegraph.structure.schema.PropertyKey;
 import com.baidu.hugegraph.structure.schema.VertexLabel;
 import com.baidu.hugegraph.util.E;
-
-import jersey.repackaged.com.google.common.collect.ImmutableList;
-import jersey.repackaged.com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 public class BackupManager extends BackupRestoreBaseManager {
 
