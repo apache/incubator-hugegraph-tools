@@ -122,7 +122,8 @@ public class BackupRestoreBaseManager extends RetryManager {
 
     protected long write(String path, HugeType type, List<?> list,
                          boolean compress, String format,
-                         String label, List<String> properties) {
+                         String label, boolean allProperties,
+                         List<String> properties) {
         if (format.equals("json") || compress) {
             return this.write(path, type, list);
         }
@@ -146,12 +147,21 @@ public class BackupRestoreBaseManager extends RetryManager {
                     builder.append(edge.sourceId()).append("\t")
                            .append(edge.targetId()).append("\t");
                 }
-                for (String property : properties) {
-                    Object value = element.property(property);
-                    if (value != null) {
-                        builder.append(value);
+                if (allProperties) {
+                    for (Object value : element.properties().values()) {
+                        if (value != null) {
+                            builder.append(value);
+                        }
+                        builder.append(",");
                     }
-                    builder.append(",");
+                } else {
+                    for (String property : properties) {
+                        Object value = element.property(property);
+                        if (value != null) {
+                            builder.append(value);
+                        }
+                        builder.append(",");
+                    }
                 }
                 builder.setCharAt(builder.length() - 1, '\n');
             }

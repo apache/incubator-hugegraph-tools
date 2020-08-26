@@ -82,6 +82,7 @@ public class BackupManager extends BackupRestoreBaseManager {
     private boolean compress;
     private String format;
     private String label;
+    private boolean allProperties;
     private List<String> properties;
 
     public BackupManager(ToolClient.ConnectionInfo info) {
@@ -107,6 +108,7 @@ public class BackupManager extends BackupRestoreBaseManager {
                             "backup type is vertex or edge");
         }
         this.label = backup.label;
+        this.allProperties = backup.allProperties;
         this.properties = backup.properties;
     }
 
@@ -311,7 +313,7 @@ public class BackupManager extends BackupRestoreBaseManager {
             int end = Math.min(start + BATCH, size);
             count += this.write(file, type, list.subList(start, end),
                                 this.compress, this.format, this.label,
-                                this.properties);
+                                this.allProperties, this.properties);
         }
         return count;
     }

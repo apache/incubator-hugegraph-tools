@@ -136,6 +136,10 @@ public class SubCommands {
                                  "is vertex or edge")
         public String label;
 
+        @Parameter(names = {"--all-properties"}, arity = 1,
+                   description = "All properties to be backup flag")
+        public boolean allProperties = false;
+
         @Parameter(names = {"--properties"}, arity = 1,
                    description = "Vertex or edge properties to backup, " +
                                  "only valid when type is vertex or edge")
@@ -171,6 +175,14 @@ public class SubCommands {
 
         public void label(String label) {
             this.label = label;
+        }
+
+        public boolean allProperties() {
+            return this.allProperties;
+        }
+
+        public void allProperties(boolean allProperties) {
+            this.allProperties = allProperties;
         }
 
         public List<String> properties() {
