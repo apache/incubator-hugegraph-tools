@@ -302,7 +302,7 @@ public class BackupManager extends BackupRestoreBaseManager {
 
     private void backup(HugeType type, List<?> list) {
         String file = type.string();
-        this.write(file, type, list);
+        this.write(file, type, list, true);
     }
 
     private long backup(HugeType type, int number, List<?> list) {

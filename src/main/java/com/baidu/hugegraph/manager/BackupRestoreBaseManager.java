@@ -104,8 +104,9 @@ public class BackupRestoreBaseManager extends RetryManager {
         this.directory.removeDirectory();
     }
 
-    protected long write(String path, HugeType type, List<?> list) {
-        OutputStream os = this.outputStream(path, false);
+    protected long write(String path, HugeType type,
+                         List<?> list, boolean compress) {
+        OutputStream os = this.outputStream(path, compress);
         ByteArrayOutputStream baos = new ByteArrayOutputStream(LBUF_SIZE);
         try {
             String key = String.format("{\"%s\": ", type.string());
@@ -113,7 +114,7 @@ public class BackupRestoreBaseManager extends RetryManager {
             this.client.mapper().writeValue(baos, list);
             baos.write("}\n".getBytes(API.CHARSET));
             os.write(baos.toByteArray());
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new ToolsException("Failed to serialize %s to %s",
                                      e, type, path);
         }
@@ -124,12 +125,19 @@ public class BackupRestoreBaseManager extends RetryManager {
                          boolean compress, String format,
                          String label, boolean allProperties,
                          List<String> properties) {
-        if (format.equals("json") || compress) {
-            return this.write(path, type, list);
+        if (format.equals("json")) {
+            return this.write(path, type, list, compress);
         }
 
         assert format.equals("text");
-        OutputStream os = this.outputStream(path, false);
+        return this.writeText(path, type, list, compress, label,
+                              allProperties, properties);
+    }
+
+    protected long writeText(String path, HugeType type, List<?> list,
+                             boolean compress, String label,
+                             boolean allProperties, List<String> properties) {
+        OutputStream os = this.outputStream(path, compress);
         ByteArrayOutputStream baos = new ByteArrayOutputStream(LBUF_SIZE);
         StringBuilder builder = new StringBuilder(LBUF_SIZE);
         long count = 0L;
@@ -149,25 +157,18 @@ public class BackupRestoreBaseManager extends RetryManager {
                 }
                 if (allProperties) {
                     for (Object value : element.properties().values()) {
-                        if (value != null) {
-                            builder.append(value);
-                        }
-                        builder.append(",");
+                        builder.append(value).append(",");
                     }
                 } else {
                     for (String property : properties) {
-                        Object value = element.property(property);
-                        if (value != null) {
-                            builder.append(value);
-                        }
-                        builder.append(",");
+                        builder.append(element.property(property)).append(",");
                     }
                 }
                 builder.setCharAt(builder.length() - 1, '\n');
             }
             baos.write(builder.toString().getBytes(API.CHARSET));
             os.write(baos.toByteArray());
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new ToolsException("Failed to serialize %s to %s",
                                      e, type, path);
         }

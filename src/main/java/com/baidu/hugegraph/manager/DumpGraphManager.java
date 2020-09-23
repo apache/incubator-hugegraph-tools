@@ -91,7 +91,8 @@ public class DumpGraphManager extends BackupManager {
     }
 
     @Override
-    protected long write(String file, HugeType type, List<?> list) {
+    protected long write(String file, HugeType type,
+                         List<?> list, boolean compress) {
         switch (type) {
             case VERTEX:
                 for (Object vertex : list) {
