@@ -37,7 +37,6 @@ import com.baidu.hugegraph.structure.JsonGraph.JsonVertex;
 import com.baidu.hugegraph.structure.constant.HugeType;
 import com.baidu.hugegraph.structure.graph.Edge;
 import com.baidu.hugegraph.structure.graph.Vertex;
-import com.baidu.hugegraph.util.E;
 
 public class DumpGraphManager extends BackupManager {
 
@@ -66,14 +65,10 @@ public class DumpGraphManager extends BackupManager {
         this.retry(dump.retry());
         LocalDirectory.ensureDirectoryExist(dump.logDir());
         this.logDir(dump.logDir());
-        this.directory = this.directory(dump.directory(), dump.hdfsConf());
-
+        this.directory(dump.directory(), dump.hdfsConf());
         this.removeShardsFilesIfExists();
         this.ensureDirectoryExist(true);
-        long splitSize = dump.splitSize();
-        E.checkArgument(splitSize >= 1024 * 1024,
-                        "Split size must >= 1M, but got %s", splitSize);
-        this.splitSize(splitSize);
+        this.splitSize(dump.splitSize());
     }
 
     public void dump() {

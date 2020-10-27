@@ -366,8 +366,9 @@ public class HugeGraphCommand {
                       "Construct manager failed for class '%s', please make " +
                       "sure global arguments set correctly: " +
                       "--url=%s,--graph=%s,--username=%s,--password=%s," +
-                      "--timeout=%s", clz, this.url(), this.graph(),
-                      this.username(), this.password(), this.timeout()), e);
+                      "--timeout=%s", clz.getSimpleName(), this.url(),
+                      this.graph(), this.username(), this.password(),
+                      this.timeout()), e);
         }
     }
 
