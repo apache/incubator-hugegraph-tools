@@ -30,12 +30,14 @@ import com.baidu.hugegraph.api.API;
 import com.baidu.hugegraph.base.LocalDirectory;
 import com.baidu.hugegraph.base.Printer;
 import com.baidu.hugegraph.base.ToolClient;
+import com.baidu.hugegraph.cmd.SubCommands;
 import com.baidu.hugegraph.formatter.Formatter;
 import com.baidu.hugegraph.structure.JsonGraph;
 import com.baidu.hugegraph.structure.JsonGraph.JsonVertex;
 import com.baidu.hugegraph.structure.constant.HugeType;
 import com.baidu.hugegraph.structure.graph.Edge;
 import com.baidu.hugegraph.structure.graph.Vertex;
+import com.baidu.hugegraph.util.E;
 
 public class DumpGraphManager extends BackupManager {
 
@@ -59,7 +61,23 @@ public class DumpGraphManager extends BackupManager {
         this.dumpFormatter = Formatter.loadFormatter(formatter);
     }
 
-    public void dump(String outputDir) {
+    public void init(SubCommands.DumpGraph dump) {
+        assert dump.retry() > 0;
+        this.retry(dump.retry());
+        LocalDirectory.ensureDirectoryExist(dump.logDir());
+        this.logDir(dump.logDir());
+        this.directory = this.directory(dump.directory(), dump.hdfsConf());
+
+        this.removeShardsFilesIfExists();
+        this.ensureDirectoryExist(true);
+        long splitSize = dump.splitSize();
+        E.checkArgument(splitSize >= 1024 * 1024,
+                        "Split size must >= 1M, but got %s", splitSize);
+        this.splitSize(splitSize);
+    }
+
+    public void dump() {
+        String outputDir = this.directory.directory();
         LocalDirectory.ensureDirectoryExist(outputDir);
         this.startTimer();
 

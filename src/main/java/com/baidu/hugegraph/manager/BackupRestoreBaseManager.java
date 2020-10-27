@@ -218,7 +218,7 @@ public class BackupRestoreBaseManager extends RetryManager {
         return is;
     }
 
-    private Directory directory(String dir, Map<String, String> hdfsConf) {
+    protected Directory directory(String dir, Map<String, String> hdfsConf) {
         // Local FS directory
         if (hdfsConf == null || hdfsConf.isEmpty()) {
             return LocalDirectory.constructDir(dir, this.graph());

@@ -447,7 +447,7 @@ public class BackupManager extends BackupRestoreBaseManager {
         return Paths.get(this.logDir(), shardsFile).toString();
     }
 
-    private void removeShardsFilesIfExists() {
+    protected void removeShardsFilesIfExists() {
         File logDir = new File(this.logDir());
         E.checkArgument(logDir.exists() && logDir.isDirectory(),
                         "The log directory '%s' not exists or is file",
