@@ -219,13 +219,14 @@ public class BackupRestoreBaseManager extends RetryManager {
     }
 
     protected void directory(String dir, Map<String, String> hdfsConf) {
-        // Local FS directory
         if (hdfsConf == null || hdfsConf.isEmpty()) {
+            // Local FS directory
             this.directory = LocalDirectory.constructDir(dir, this.graph());
+        } else {
+            // HDFS directory
+            this.directory = HdfsDirectory.constructDir(dir, this.graph(),
+                                                        hdfsConf);
         }
-        // HDFS directory
-        this.directory = HdfsDirectory.constructDir(dir, this.graph(),
-                                                    hdfsConf);
     }
 
     protected String fileWithPrefix(HugeType type) {
