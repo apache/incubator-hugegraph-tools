@@ -29,6 +29,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ToolClient {
 
+    private static final String DEFAULT_TRUST_STORE_FILE = "./bin/keystore";
+    private static final String DEFAULT_TRUST_STORE_PASSWORD = "123456";
+
     private HugeClient client;
     private ObjectMapper mapper;
 
@@ -37,11 +40,19 @@ public class ToolClient {
             info.username = "";
             info.password = "";
         }
+        String trustStoreFile, trustStorePassword;
+        if (info.url.startsWith("https") &&
+            (info.trustStoreFile == null || info.trustStoreFile.isEmpty())) {
+            trustStoreFile = DEFAULT_TRUST_STORE_FILE;
+            trustStorePassword = DEFAULT_TRUST_STORE_PASSWORD;
+        } else {
+            trustStoreFile = info.trustStoreFile;
+            trustStorePassword = info.trustStorePassword;
+        }
         this.client = HugeClient.builder(info.url, info.graph)
                                 .configUser(info.username, info.password)
                                 .configTimeout(info.timeout)
-                                .configSSL(info.trustStoreFile,
-                                           info.trustStorePassword)
+                                .configSSL(trustStoreFile, trustStorePassword)
                                 .build();
 
         this.mapper = new ObjectMapper();
@@ -86,7 +97,8 @@ public class ToolClient {
         private String trustStorePassword;
 
         public ConnectionInfo(String url, String graph,
-                              String username, String password, Integer timeout,
+                              String username, String password,
+                              Integer timeout,
                               String trustStoreFile,
                               String trustStorePassword) {
             this.url = url;
