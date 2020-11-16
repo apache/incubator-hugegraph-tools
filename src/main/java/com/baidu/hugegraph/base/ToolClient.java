@@ -40,7 +40,7 @@ public class ToolClient {
         this.client = HugeClient.builder(info.url, info.graph)
                                 .configUser(info.username, info.password)
                                 .configTimeout(info.timeout)
-                                .configSSL(info.protocol, info.trustStoreFile,
+                                .configSSL(info.trustStoreFile,
                                            info.trustStorePassword)
                                 .build();
 
@@ -82,20 +82,18 @@ public class ToolClient {
         private String username;
         private String password;
         private Integer timeout;
-        private String protocol;
         private String trustStoreFile;
         private String trustStorePassword;
 
         public ConnectionInfo(String url, String graph,
-                              String username, String password,
-                              Integer timeout, String protocol,
-                              String trustStoreFile, String trustStorePassword) {
+                              String username, String password, Integer timeout,
+                              String trustStoreFile,
+                              String trustStorePassword) {
             this.url = url;
             this.graph = graph;
             this.username = username;
             this.password = password;
             this.timeout = timeout;
-            this.protocol = protocol;
             this.trustStoreFile = trustStoreFile;
             this.trustStorePassword = trustStorePassword;
         }
