@@ -29,8 +29,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ToolClient {
 
-    private static final String DEFAULT_TRUST_STORE_FILE = "./bin/keystore";
-    private static final String DEFAULT_TRUST_STORE_PASSWORD = "123456";
+    private static final String DEFAULT_TRUST_STORE_FILE =
+                                "conf/hugegraph.truststore";
+    private static final String DEFAULT_TRUST_STORE_PASSWORD = "hugegraph";
 
     private HugeClient client;
     private ObjectMapper mapper;
