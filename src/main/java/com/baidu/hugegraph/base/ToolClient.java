@@ -44,11 +44,13 @@ public class ToolClient {
         }
         String trustStoreFile, trustStorePassword;
         if (info.url.startsWith("https")) {
-            if (info.trustStoreFile == null || info.trustStoreFile.isEmpty() ||
-                info.trustStorePassword == null) {
+            if (info.trustStoreFile == null || info.trustStoreFile.isEmpty()) {
                 trustStoreFile = DEFAULT_TRUST_STORE_FILE;
                 trustStorePassword = DEFAULT_TRUST_STORE_PASSWORD;
             } else {
+                E.checkArgumentNotNull(info.trustStorePassword,
+                                       "The trust store password can't be " +
+                                       "null when use https");
                 trustStoreFile = info.trustStoreFile;
                 trustStorePassword = info.trustStorePassword;
             }
