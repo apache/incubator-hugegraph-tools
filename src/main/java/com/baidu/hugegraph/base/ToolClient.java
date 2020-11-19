@@ -25,6 +25,7 @@ import com.baidu.hugegraph.driver.HugeClient;
 import com.baidu.hugegraph.driver.SchemaManager;
 import com.baidu.hugegraph.driver.TaskManager;
 import com.baidu.hugegraph.driver.TraverserManager;
+import com.baidu.hugegraph.util.E;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ToolClient {
@@ -47,6 +48,9 @@ public class ToolClient {
             trustStoreFile = DEFAULT_TRUST_STORE_FILE;
             trustStorePassword = DEFAULT_TRUST_STORE_PASSWORD;
         } else {
+            E.checkArgument(info.trustStoreFile == null ||
+                            info.trustStoreFile.isEmpty(),
+                            "Can't set --trust-store-file when use http");
             trustStoreFile = info.trustStoreFile;
             trustStorePassword = info.trustStorePassword;
         }

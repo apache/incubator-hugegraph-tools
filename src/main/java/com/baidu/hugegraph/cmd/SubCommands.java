@@ -290,11 +290,12 @@ public class SubCommands {
         public int targetTimeout;
 
         @Parameter(names = {"--target-trust-store-file"}, arity = 1,
-                   description = "The target graph trust store file to migrate")
+                   description = "The trust store file of target graph to " +
+                                 "migrate")
         public String targetTrustStoreFile = "";
 
         @Parameter(names = {"--target-trust-store-password"}, arity = 1,
-                   description = "The target graph trust store password " +
+                   description = "The trust store password of target graph " +
                                  "to migrate")
         public String targetTrustStorePassword = "";
 
