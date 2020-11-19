@@ -89,7 +89,6 @@ public class DumpGraphManager extends BackupManager {
     }
 
     private void dump(String file, Collection<JsonVertex> vertices) {
-
         try (OutputStream os = this.outputStream(file, false);
              BufferedOutputStream bos = new BufferedOutputStream(os)) {
             for (JsonVertex vertex : vertices) {

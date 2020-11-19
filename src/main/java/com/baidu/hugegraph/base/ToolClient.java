@@ -51,6 +51,8 @@ public class ToolClient {
             E.checkArgument(info.trustStoreFile == null ||
                             info.trustStoreFile.isEmpty(),
                             "Can't set --trust-store-file when use http");
+            E.checkArgument(info.trustStorePassword == null,
+                            "Can't set --trust-store-password when use http");
             trustStoreFile = info.trustStoreFile;
             trustStorePassword = info.trustStorePassword;
         }
