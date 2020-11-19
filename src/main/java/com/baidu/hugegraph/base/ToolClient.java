@@ -43,11 +43,17 @@ public class ToolClient {
             info.password = "";
         }
         String trustStoreFile, trustStorePassword;
-        if (info.url.startsWith("https") &&
-            (info.trustStoreFile == null || info.trustStoreFile.isEmpty())) {
-            trustStoreFile = DEFAULT_TRUST_STORE_FILE;
-            trustStorePassword = DEFAULT_TRUST_STORE_PASSWORD;
+        if (info.url.startsWith("https")) {
+            if (info.trustStoreFile == null || info.trustStoreFile.isEmpty() ||
+                info.trustStorePassword == null) {
+                trustStoreFile = DEFAULT_TRUST_STORE_FILE;
+                trustStorePassword = DEFAULT_TRUST_STORE_PASSWORD;
+            } else {
+                trustStoreFile = info.trustStoreFile;
+                trustStorePassword = info.trustStorePassword;
+            }
         } else {
+            assert info.url.startsWith("http");
             E.checkArgument(info.trustStoreFile == null ||
                             info.trustStoreFile.isEmpty(),
                             "Can't set --trust-store-file when use http");
