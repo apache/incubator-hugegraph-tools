@@ -47,6 +47,8 @@ import static com.baidu.hugegraph.manager.BackupManager.BACKUP_DEFAULT_TIMEOUT;
 
 public class HugeGraphCommand {
 
+    private static final int DEFAULT_CLEAR_TIMEOUT = 300;
+
     private SubCommands subCommands;
 
     @ParametersDelegate
@@ -252,7 +254,9 @@ public class HugeGraphCommand {
                 break;
             case "graph-clear":
                 SubCommands.GraphClear graphClear = this.subCommand(subCmd);
-                this.timeout(300);
+                if (timeout() < DEFAULT_CLEAR_TIMEOUT) {
+                    this.timeout(DEFAULT_CLEAR_TIMEOUT);
+                }
                 graphsManager = manager(GraphsManager.class);
                 graphsManager.clear(this.graph(), graphClear.confirmMessage());
                 Printer.print("Graph '%s' is cleared", this.graph());

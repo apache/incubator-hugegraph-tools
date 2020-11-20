@@ -306,8 +306,8 @@ public class SubCommands {
                                  "include: [RESTORING, MERGING]")
         public GraphMode mode = GraphMode.RESTORING;
 
-        @Parameter(names = {"--keep-data"},
-                   description = "Whether to keep the directory of " +
+        @Parameter(names = {"--keep-local-data"},
+                   description = "Whether to keep the local directory of " +
                                  "graph data after restored")
         public boolean keepData = false;
 
