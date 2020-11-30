@@ -19,21 +19,11 @@
 
 package com.baidu.hugegraph.cmd;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import com.baidu.hugegraph.base.Printer;
 import com.baidu.hugegraph.base.ToolClient;
 import com.baidu.hugegraph.base.ToolClient.ConnectionInfo;
 import com.baidu.hugegraph.base.ToolManager;
-import com.baidu.hugegraph.manager.BackupManager;
-import com.baidu.hugegraph.manager.DumpGraphManager;
-import com.baidu.hugegraph.manager.GraphsManager;
-import com.baidu.hugegraph.manager.GremlinManager;
-import com.baidu.hugegraph.manager.RestoreManager;
-import com.baidu.hugegraph.manager.TasksManager;
+import com.baidu.hugegraph.manager.*;
 import com.baidu.hugegraph.structure.Task;
 import com.baidu.hugegraph.structure.constant.GraphMode;
 import com.baidu.hugegraph.structure.gremlin.Result;
@@ -42,6 +32,11 @@ import com.baidu.hugegraph.util.E;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParametersDelegate;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.baidu.hugegraph.manager.BackupManager.BACKUP_DEFAULT_TIMEOUT;
 
@@ -328,6 +323,22 @@ public class HugeGraphCommand {
                 Printer.print("Tasks are cleared[force=%s]",
                               taskClear.force());
                 break;
+            case "auth-backup":
+                Printer.print("Auth backup start !");
+                SubCommands.AuthBackup authBackup = this.subCommand(subCmd);
+                AuthBackupManager authBackupManager = manager(AuthBackupManager.class);
+
+                authBackupManager.init(authBackup);
+                authBackupManager.authBackup(authBackup.types());
+                break;
+            case "auth-restore":
+                Printer.print("Auth restore start !");
+                SubCommands.AuthRestore authRestore = this.subCommand(subCmd);
+                AuthRestoreManager authRestoreManager = manager(AuthRestoreManager.class);
+
+                authRestoreManager.init(authRestore);
+                authRestoreManager.authRestore(authRestore.types());
+                break;
             case "help":
                 jCommander.usage();
                 break;
@@ -423,8 +434,12 @@ public class HugeGraphCommand {
             jCommander.usage();
             System.exit(-1);
         }
-
-        cmd.execute(subCommand, jCommander);
+        try {
+            cmd.execute(subCommand, jCommander);
+        } catch (Exception e) {
+            Printer.print("Exception in 'main' is %s", e);
+            System.exit(-1);
+        }
         System.exit(0);
     }
 }

@@ -19,18 +19,19 @@
 
 package com.baidu.hugegraph.base;
 
-import java.nio.file.Paths;
-
-import org.apache.commons.lang3.StringUtils;
-
+import com.baidu.hugegraph.driver.AuthManager;
 import com.baidu.hugegraph.driver.GraphManager;
 import com.baidu.hugegraph.driver.GremlinManager;
 import com.baidu.hugegraph.driver.HugeClient;
 import com.baidu.hugegraph.driver.SchemaManager;
 import com.baidu.hugegraph.driver.TaskManager;
 import com.baidu.hugegraph.driver.TraverserManager;
+
 import com.baidu.hugegraph.util.E;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
+
+import java.nio.file.Paths;
 
 public class ToolClient {
 
@@ -111,6 +112,10 @@ public class ToolClient {
                         "The system property 'tools.home.path' " +
                         "can't be empty when enable https protocol");
         return homePath;
+    }
+
+    public AuthManager authManager() {
+        return this.client.auth();
     }
 
     public static class ConnectionInfo {
