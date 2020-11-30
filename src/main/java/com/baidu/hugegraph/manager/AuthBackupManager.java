@@ -61,7 +61,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
                     break;
                 default:
                     throw new AssertionError(String.format(
-                          "Bad backup type: %s", type));
+                              "Bad backup type: %s", type));
             }
         }
         this.shutdown(this.type());
@@ -70,7 +70,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
     protected void backupUsers() {
         Printer.print("Users backup started");
         List<User> users = retry(this.client.authManager()::listUsers,
-                                "querying users of authority");
+                                 "querying users of authority");
         long writeLines = this.writeText(HugeType.USER, users);
         Printer.print("Users backup finished, write lines: %d", writeLines);
     }
@@ -78,7 +78,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
     protected void backupGroups() {
         Printer.print("Groups backup started");
         List<Group> groups = retry(this.client.authManager()::listGroups,
-                                  "querying groups of authority");
+                                   "querying groups of authority");
         long writeLines = this.writeText(HugeType.GROUP, groups);
         Printer.print("Groups backup finished, write lines: %d", writeLines);
     }
@@ -86,7 +86,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
     protected void backupTargets() {
         Printer.print("Targets backup started");
         List<Target> targets = retry(this.client.authManager()::listTargets,
-                                    "querying targets of authority");
+                                     "querying targets of authority");
         long writeLines = this.writeText(HugeType.TARGET, targets);
         Printer.print("Targets backup finished, write lines: %d", writeLines);
     }
@@ -94,7 +94,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
     protected void backupBelongs() {
         Printer.print("Belongs backup started");
         List<Belong> belongs = retry(this.client.authManager()::listBelongs,
-                                    "querying belongs of authority");
+                                     "querying belongs of authority");
         long writeLines = this.writeText(HugeType.BELONG, belongs);
         Printer.print("Belongs backup finished, write lines: %d", writeLines);
     }
@@ -102,7 +102,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
     protected void backupAccesses() {
         Printer.print("Accesses backup started");
         List<Access> accesses = retry(this.client.authManager()::listAccesses,
-                                     "querying accesses of authority");
+                                      "querying accesses of authority");
         long writeLines = this.writeText(HugeType.ACCESS, accesses);
         Printer.print("Accesses backup finished, write lines: %d", writeLines);
     }
@@ -137,6 +137,5 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
                                                          hdfsConf);
         }
     }
-
 
 }

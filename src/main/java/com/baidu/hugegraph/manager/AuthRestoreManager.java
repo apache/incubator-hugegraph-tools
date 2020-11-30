@@ -52,7 +52,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
     private int conflict_status = 0;
     private AuthRestoreStrategy strategy;
     private String initPassword;
-    /**
+    /*
      * The collection of id relationships of users, groups and targets
      * is the basic data of belong and accesses。
      */
@@ -128,7 +128,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                     break;
                 default:
                     throw new AssertionError(String.format(
-                            "Bad restore type: %s", type));
+                              "Bad restore type: %s", type));
             }
         }
         if (status == AuthRestoreFlow.RESTORE.code()) {
@@ -138,7 +138,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
 
     protected void checkUseConflict() {
         List<User> users = retry(this.client.authManager()::listUsers,
-                                "Querying users of authority");
+                                 "Querying users of authority");
         List<String> userJsons = this.read(HugeType.USER);
         Map<String, User> userMap = Maps.newHashMap();
         for (User user : users) {
@@ -182,7 +182,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
 
     protected void checkGroupsConflict() {
         List<Group> groups = retry(this.client.authManager()::listGroups,
-                                  "Querying users of authority");
+                                   "Querying users of authority");
         List<String> groupJsons = this.read(HugeType.GROUP);
         Map<String, Group> groupMap = Maps.newHashMap();
         for (Group group : groups) {
@@ -216,7 +216,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
 
     protected void checkTargetsConflict() {
         List<Target> targets = retry(this.client.authManager()::listTargets,
-                                    "Querying targets of authority");
+                                     "Querying targets of authority");
         List<String> targetJsons = this.read(HugeType.TARGET);
         Map<String, Target> targetMap = Maps.newHashMap();
         for (Target target : targets) {
@@ -255,7 +255,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
 
     protected void checkBelongsConflict() {
         List<Belong> belongs = retry(this.client.authManager()::listBelongs,
-                                    "Querying belongs of authority");
+                                     "Querying belongs of authority");
         List<String> belongJsons = this.read(HugeType.BELONG);
         Map<String, Belong>  belongMap = Maps.newHashMap();
         for (Belong belong : belongs) {
@@ -272,10 +272,10 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                          this.idsMap.get(restoreBelong.group());
             if (belongMap.containsKey(ids)) {
                 E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                        "Restore belongs conflict with stop strategy");
+                                "Restore belongs conflict with stop strategy");
                 E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
                                 this.strategy == AuthRestoreStrategy.IGNORE,
-                        "Restore belongs strategy is not fund");
+                                "Restore belongs strategy is not fund");
                 continue;
             }
             this.belongsByName.put(restoreBelong.id().toString(), restoreBelong);
@@ -301,10 +301,10 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                          this.idsMap.get(restoreAccess.target());
             if (accessMap.containsKey(ids)) {
                 E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                        "Restore accesses conflict with stop strategy");
+                                "Restore accesses conflict with stop strategy");
                 E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
                                 this.strategy == AuthRestoreStrategy.IGNORE,
-                        "Restore accesses strategy is not fund");
+                                "Restore accesses strategy is not fund");
                 continue;
             }
             this.accessesByName.put(restoreAccess.id().toString(), restoreAccess);
@@ -413,7 +413,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              }
         } catch (IOException e) {
             throw new ToolsException("Failed to deserialize %s from %s",
-                    e, type, type.string());
+                                     e, type, type.string());
         }
         return resultList;
     }
@@ -434,7 +434,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
             this.strategy = AuthRestoreStrategy.getEnumByName(strategy);
         } else {
             throw new ParameterException(String.format(
-                    "Bad restore strategy: %s", strategy));
+                      "Bad restore strategy: %s", strategy));
         }
     }
 
@@ -447,19 +447,11 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
     public void initPassword(List<HugeType> types, String password) {
         if (types.contains(HugeType.USER) && Strings.isEmpty(password)) {
             throw new ParameterException(String.format(
-                    "The following option is required: [--init-password]"));
+                      "The following option is required: [--init-password]"));
         } else {
             this.initPassword = password;
         }
 
     }
-
-    public static void main(String[] strings) {
-
-    }
-
-
-
-
 
 }

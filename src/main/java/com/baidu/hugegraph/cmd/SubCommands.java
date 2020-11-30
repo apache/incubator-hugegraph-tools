@@ -809,13 +809,13 @@ public class SubCommands {
     public static class AuthBackupRestore {
 
         @Parameter(names = {"--directory"}, arity = 1,
-                description = "Directory of auth information, default is " +
-                        "'./{authName}' in local file system " +
-                        "or '{fs.default.name}/{authName}' in HDFS")
+                   description = "Directory of auth information, default is " +
+                                 "'./{authName}' in local file system " +
+                                 "or '{fs.default.name}/{authName}' in HDFS")
         public String directory;
 
         @DynamicParameter(names = "-D",
-                description = "HDFS config parameters")
+                          description = "HDFS config parameters")
         private Map<String, String> hdfsConf = new HashMap<>();
 
         @ParametersDelegate
@@ -848,8 +848,8 @@ public class SubCommands {
         private AuthTypes types = new AuthTypes();
 
         @Parameter(names = {"--format"}, arity = 1,
-                validateWith = {FormatValidator.class},
-                description = "File format, valid is [json, text]")
+                   validateWith = {FormatValidator.class},
+                   description = "File format, valid is [json, text]")
         public String format = "json";
 
         public List<HugeType> types() {
@@ -913,12 +913,12 @@ public class SubCommands {
     public static class AuthTypes {
 
         @Parameter(names = {"--types", "-t"},
-                listConverter = AuthHugeTypeConverter.class,
-                description = "Type of auth " +
-                        "Concat with ',' if more than one. " +
-                        "'all' means all auth information" +
-                        " in other words, 'all' equals with " +
-                        "'user,group,target,belong,access'")
+                   listConverter = AuthHugeTypeConverter.class,
+                   description = "Type of auth " +
+                                 "Concat with ',' if more than one. " +
+                                 "'all' means all auth information" +
+                                 " in other words, 'all' equals with " +
+                                 "'user,group,target,belong,access'")
         public List<HugeType> types = AuthHugeTypeConverter.AUTH_ALL_TYPES;
     }
 
@@ -977,7 +977,7 @@ public class SubCommands {
         @Override
         public List<HugeType> convert(String value) {
             E.checkArgument(value != null && !value.isEmpty(),
-                    "HugeType can't be null or empty");
+                            "HugeType can't be null or empty");
             String[] types = value.split(",");
             if (types.length == 1 && types[0].equalsIgnoreCase("all")) {
                 return AUTH_ALL_TYPES;
@@ -988,9 +988,9 @@ public class SubCommands {
                     hugeTypes.add(HugeType.valueOf(type.toUpperCase()));
                 } catch (IllegalArgumentException e) {
                     throw new ParameterException(String.format(
-                            "Invalid --type '%s', valid value is 'all' or " +
-                                    "combination of 'user,group,target," +
-                                    "belong,access'", type));
+                              "Invalid --type '%s', valid value is 'all' or " +
+                              "combination of 'user,group,target," +
+                              "belong,access'", type));
                 }
             }
             return hugeTypes;
@@ -1005,13 +1005,14 @@ public class SubCommands {
         @Override
         public String convert(String value) {
             E.checkArgument(value != null && !value.isEmpty(),
-                    "Strategy can't be null or empty");
+                            "Strategy can't be null or empty");
             if (AuthRestoreStrategy.STOP.string().equals(value) ||
                 AuthRestoreStrategy.IGNORE.string().equals(value)) {
                 return value;
             } else {
                 throw new ParameterException(String.format(
-                        "Invalid --strategy '%s', valid value is 'stop' or 'ignore", value));
+                          "Invalid --strategy '%s', valid value is 'stop' or " +
+                          "'ignore", value));
             }
         }
     }
