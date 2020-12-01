@@ -129,7 +129,7 @@ public class SubCommands {
         public boolean compress = true;
 
         @Parameter(names = {"--label"}, arity = 1,
-                   description = "Vertex or edge label, only valid when type " +
+                   description = "Vertex label or edge label, only valid when type " +
                                  "is vertex or edge")
         public String label;
 
@@ -675,6 +675,13 @@ public class SubCommands {
         public String trustStorePassword;
     }
 
+    public static class TestMode {
+
+        @Parameter(names = {"--test-mode"}, arity = 1,
+                description = "Test mode")
+        public String testMode = "test";
+    }
+
     public static class HugeTypes {
 
         @Parameter(names = {"--huge-types", "-t"},
@@ -810,8 +817,8 @@ public class SubCommands {
 
         @Parameter(names = {"--directory"}, arity = 1,
                    description = "Directory of auth information, default is " +
-                                 "'./{authName}' in local file system " +
-                                 "or '{fs.default.name}/{authName}' in HDFS")
+                                 "'./{auth-backup}' in local file system " +
+                                 "or '{fs.default.name}/{auth-backup}' in HDFS")
         public String directory;
 
         @DynamicParameter(names = "-D",

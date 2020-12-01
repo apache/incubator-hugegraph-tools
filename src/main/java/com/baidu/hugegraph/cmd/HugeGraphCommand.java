@@ -33,6 +33,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParametersDelegate;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,8 @@ import static com.baidu.hugegraph.manager.BackupManager.BACKUP_DEFAULT_TIMEOUT;
 public class HugeGraphCommand {
 
     private static final int DEFAULT_CLEAR_TIMEOUT = 300;
+
+    private static final String TEST_MODE = "--test-mode";
 
     private SubCommands subCommands;
 
@@ -68,6 +71,9 @@ public class HugeGraphCommand {
     @ParametersDelegate
     private SubCommands.TrustStorePassword trustStorePassword =
                                            new SubCommands.TrustStorePassword();
+
+    @ParametersDelegate
+    private SubCommands.TestMode testMode = new SubCommands.TestMode();
 
     public HugeGraphCommand() {
         this.subCommands = new SubCommands();
@@ -136,6 +142,14 @@ public class HugeGraphCommand {
 
     public void trustStorePassword(String trustStorePassword) {
         this.trustStorePassword.trustStorePassword = trustStorePassword;
+    }
+
+    public String testMode() {
+        return this.testMode.testMode;
+    }
+
+    private void testMode(String testMode) {
+        this.testMode.testMode = testMode;
     }
 
     public JCommander jCommander() {
@@ -414,6 +428,15 @@ public class HugeGraphCommand {
     }
 
     public static void main(String[] args) {
+        List<String> list = Arrays.asList(args);
+        if (!list.contains(TEST_MODE)) {
+            mainMode(args);
+        } else {
+            testMode(args);
+        }
+    }
+
+    public static void mainMode(String[] args) {
         HugeGraphCommand cmd = new HugeGraphCommand();
         JCommander jCommander = cmd.jCommander();
 
@@ -442,4 +465,14 @@ public class HugeGraphCommand {
         }
         System.exit(0);
     }
+
+    public static void testMode(String[] args) {
+        HugeGraphCommand cmd = new HugeGraphCommand();
+        JCommander jCommander = cmd.jCommander();
+
+        jCommander.parse(args);
+        String subCommand = jCommander.getParsedCommand();
+        cmd.execute(subCommand, jCommander);
+    }
+
 }
