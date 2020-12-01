@@ -317,10 +317,9 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              Access restoreAccess = entry.getValue();
              restoreAccess.target(idsMap.get(restoreAccess.target().toString()));
              restoreAccess.group(idsMap.get(restoreAccess.group().toString()));
-             Access access = retry(() -> {
-                                    return this.client.authManager().createAccess(restoreAccess);
-                                    }, "Restore access of authority");
-             idsMap.put(restoreAccess.id().toString(), access.id().toString());
+             retry(() -> {
+                       return this.client.authManager().createAccess(restoreAccess);
+                       }, "Restore access of authority");
              counts++;
             }
         Printer.print("Restore accesses finished, counts is %s !", counts);
@@ -332,10 +331,9 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              Belong restoreBelong = entry.getValue();
              restoreBelong.user(idsMap.get(restoreBelong.user().toString()));
              restoreBelong.group(idsMap.get(restoreBelong.group().toString()));
-             Belong belong = retry(() -> {
-                                    return this.client.authManager().createBelong(restoreBelong);
-                                    }, "Restore targets of authority");
-             idsMap.put(belong.id().toString(), belong.id().toString());
+             retry(() -> {
+                       return this.client.authManager().createBelong(restoreBelong);
+                       }, "Restore targets of authority");
              counts++;
             }
         Printer.print("Restore belongs finished, counts is %s !", counts);
@@ -344,10 +342,11 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
     protected void restoreTargets() {
         int counts = 0;
         for (Map.Entry<String, Target> entry: this.targetsByName.entrySet()) {
+             Target restoreTarget = entry.getValue();
              Target target = retry(() -> {
-                                    return this.client.authManager().createTarget(entry.getValue());
-                                    }, "Restore targets of authority");
-             idsMap.put(target.id().toString(), target.id().toString());
+                                       return this.client.authManager().createTarget(restoreTarget);
+                                       }, "Restore targets of authority");
+             idsMap.put(restoreTarget.id().toString(), target.id().toString());
              counts++;
            }
         Printer.print("Restore targets finished, counts is %s !", counts);
@@ -356,10 +355,11 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
     protected void restoreGroups() {
         int counts = 0;
         for (Map.Entry<String, Group> entry: this.groupsByName.entrySet()) {
+             Group restoreGroup = entry.getValue();
              Group group = retry(() -> {
-                                  return this.client.authManager().createGroup(entry.getValue());
-                                  }, "Restore groups of authority");
-             idsMap.put(group.id().toString(), group.id().toString());
+                                     return this.client.authManager().createGroup(restoreGroup);
+                                     }, "Restore groups of authority");
+             idsMap.put(restoreGroup.id().toString(), group.id().toString());
              counts++;
         }
         Printer.print("Restore groups finished, counts is %s !", counts);
@@ -368,12 +368,12 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
     protected void restoreUsers() {
         int counts = 0;
         for (Map.Entry<String, User> entry: this.usersByName.entrySet()) {
-             User user = entry.getValue();
-             user.password(this.initPassword);
-             User createUser = retry(() -> {
-                                return this.client.authManager().createUser(user);
-                                }, "Restore users of authority");
-             idsMap.put(createUser.id().toString(), createUser.id().toString());
+             User restoreUser = entry.getValue();
+             restoreUser.password(this.initPassword);
+             User user = retry(() -> {
+                                   return this.client.authManager().createUser(restoreUser);
+                                   }, "Restore users of authority");
+             idsMap.put(restoreUser.id().toString(), user.id().toString());
              counts++;
             }
         Printer.print("Restore users finished, counts is %s !", counts);

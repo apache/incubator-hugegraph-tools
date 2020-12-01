@@ -39,7 +39,7 @@ public class AuthRestoreTest extends AuthTest{
     @Before
     public void init() {
         ClientUtil initUtil = new ClientUtil(URL, GRAPH, USER_NAME,
-                                             USER_PASSWORD, TIME_OUT, PROTOCOL,
+                                             USER_PASSWORD, TIME_OUT,
                                              TRUST_STORE_FILE, TRUST_STORE_PASSWORD);
         this.client = initUtil.hugeClient;
     }
@@ -74,21 +74,21 @@ public class AuthRestoreTest extends AuthTest{
         for (User user1 : userList) {
             userMap.put(user1.name(), user1);
         }
-        Assert.assertTrue(userMap.containsKey("test_user123"));
+        Assert.assertTrue(userMap.containsKey("test_user1"));
 
         List<Group> groups = this.client.auth().listGroups();
         Map<String, Group> groupMap = Maps.newHashMap();
         for (Group group : groups) {
             groupMap.put(group.name(), group);
         }
-        Assert.assertTrue(groupMap.containsKey("test_group123"));
+        Assert.assertTrue(groupMap.containsKey("test_group6"));
 
         List<Target> targets = this.client.auth().listTargets();
         Map<String, Target> targetMap = Maps.newHashMap();
         for (Target target : targets) {
             targetMap.put(target.name(), target);
         }
-        Assert.assertTrue(targetMap.containsKey("test_target123"));
+        Assert.assertTrue(targetMap.containsKey("test_target1"));
     }
 
     @Test
@@ -114,7 +114,7 @@ public class AuthRestoreTest extends AuthTest{
              userMap.put(user1.name(), user1);
         }
 
-        Assert.assertTrue(userMap.containsKey("test_user123"));
+        Assert.assertTrue(userMap.containsKey("test_user1"));
 
     }
 
@@ -177,7 +177,7 @@ public class AuthRestoreTest extends AuthTest{
              userMap.put(user1.name(), user1);
         }
 
-        Assert.assertTrue(userMap.containsKey("test_user123"));
+        Assert.assertTrue(userMap.containsKey("test_user1"));
     }
 
     @Test
