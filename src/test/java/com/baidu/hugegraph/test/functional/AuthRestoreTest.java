@@ -47,15 +47,15 @@ public class AuthRestoreTest extends AuthTest{
     @Test
     public void testAuthRestoreByAll() {
         this.loadData("./auth-backup/" + HugeType.USER.string(),
-                "/auth/auth_users.txt");
+                      "/auth/auth_users.txt");
         this.loadData("./auth-backup/" + HugeType.TARGET.string(),
-                "/auth/auth_targets.txt");
+                      "/auth/auth_targets.txt");
         this.loadData("./auth-backup/" + HugeType.GROUP.string(),
-                "/auth/auth_groups.txt");
+                      "/auth/auth_groups.txt");
         this.loadData("./auth-backup/" + HugeType.BELONG.string(),
-                "/auth/auth_belongs.txt");
+                      "/auth/auth_belongs.txt");
         this.loadData("./auth-backup/" + HugeType.ACCESS.string(),
-                "/auth/auth_accesses.txt");
+                      "/auth/auth_accesses.txt");
 
         String[] args = new String[]{
                 "--test-mode", "test",
