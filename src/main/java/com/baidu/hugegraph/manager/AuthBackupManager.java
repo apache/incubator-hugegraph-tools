@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HugeGraph Authors
+ * Copyright 2017 HugeGraph Authors
  * backup of authority
  * operation commands include:
  * auth-backup
@@ -11,6 +11,11 @@
 
 package com.baidu.hugegraph.manager;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
+
 import com.baidu.hugegraph.api.API;
 import com.baidu.hugegraph.base.HdfsDirectory;
 import com.baidu.hugegraph.base.LocalDirectory;
@@ -21,11 +26,6 @@ import com.baidu.hugegraph.exception.ToolsException;
 import com.baidu.hugegraph.structure.auth.*;
 import com.baidu.hugegraph.structure.constant.HugeType;
 import com.baidu.hugegraph.util.JsonUtil;
-
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Map;
 
 public class AuthBackupManager extends BackupRestoreBaseManager {
 
@@ -68,7 +68,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
     }
 
     protected void backupUsers() {
-        Printer.print("Users backup started");
+        Printer.print("Users backup started...");
         List<User> users = retry(this.client.authManager()::listUsers,
                                  "querying users of authority");
         long writeLines = this.writeText(HugeType.USER, users);
@@ -76,7 +76,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
     }
 
     protected void backupGroups() {
-        Printer.print("Groups backup started");
+        Printer.print("Groups backup started...");
         List<Group> groups = retry(this.client.authManager()::listGroups,
                                    "querying groups of authority");
         long writeLines = this.writeText(HugeType.GROUP, groups);
@@ -84,7 +84,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
     }
 
     protected void backupTargets() {
-        Printer.print("Targets backup started");
+        Printer.print("Targets backup started...");
         List<Target> targets = retry(this.client.authManager()::listTargets,
                                      "querying targets of authority");
         long writeLines = this.writeText(HugeType.TARGET, targets);
@@ -92,7 +92,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
     }
 
     protected void backupBelongs() {
-        Printer.print("Belongs backup started");
+        Printer.print("Belongs backup started...");
         List<Belong> belongs = retry(this.client.authManager()::listBelongs,
                                      "querying belongs of authority");
         long writeLines = this.writeText(HugeType.BELONG, belongs);
@@ -100,7 +100,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
     }
 
     protected void backupAccesses() {
-        Printer.print("Accesses backup started");
+        Printer.print("Accesses backup started...");
         List<Access> accesses = retry(this.client.authManager()::listAccesses,
                                       "querying accesses of authority");
         long writeLines = this.writeText(HugeType.ACCESS, accesses);

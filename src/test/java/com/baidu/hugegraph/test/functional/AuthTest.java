@@ -27,10 +27,6 @@ public class AuthTest {
     public static final String URL = "http://127.0.0.1:8080";
     public static final String GRAPH = "hugegraph";
     public static final Integer TIME_OUT = 30;
-    public static final String PROTOCOL = "http";
     public static final String TRUST_STORE_FILE = "";
     public static final String TRUST_STORE_PASSWORD = "";
-
-
-
 }

@@ -171,13 +171,13 @@ public class BackupRestoreBaseManager extends RetryManager {
         InputStream is = this.inputStream(file);
         try (InputStreamReader isr = new InputStreamReader(is, API.CHARSET);
              BufferedReader reader = new BufferedReader(isr)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                consumer.accept(type.string(), line);
-            }
+             String line;
+             while ((line = reader.readLine()) != null) {
+                 consumer.accept(type.string(), line);
+             }
         } catch (IOException e) {
-            throw new ToolsException("Failed to deserialize %s from %s",
-                                     e, type, file);
+             throw new ToolsException("Failed to deserialize %s from %s",
+                                      e, type, file);
         }
     }
 

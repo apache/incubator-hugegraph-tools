@@ -19,18 +19,18 @@
 
 package com.baidu.hugegraph.test.functional;
 
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import com.baidu.hugegraph.cmd.HugeGraphCommand;
 import com.baidu.hugegraph.driver.HugeClient;
 import com.baidu.hugegraph.structure.auth.*;
 import com.baidu.hugegraph.structure.constant.HugeType;
 import com.baidu.hugegraph.testutil.Assert;
-import com.beust.jcommander.ParameterException;
 import com.google.common.collect.Maps;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.List;
-import java.util.Map;
 
 public class AuthRestoreTest extends AuthTest{
 
@@ -129,7 +129,7 @@ public class AuthRestoreTest extends AuthTest{
                 "--directory", DEFAULT_URL
         };
 
-        Assert.assertThrows(ParameterException.class, () -> {
+        Assert.assertThrows(RuntimeException.class, () -> {
             HugeGraphCommand.main(args);
         });
     }
@@ -149,7 +149,7 @@ public class AuthRestoreTest extends AuthTest{
                 "--init-password", "123456"
         };
 
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assert.assertThrows(RuntimeException.class, () -> {
             HugeGraphCommand.main(args);
         });
     }
@@ -195,7 +195,7 @@ public class AuthRestoreTest extends AuthTest{
                 "--init-password", "123123"
         };
 
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assert.assertThrows(RuntimeException.class, () -> {
             HugeGraphCommand.main(args);
         });
     }
@@ -215,7 +215,7 @@ public class AuthRestoreTest extends AuthTest{
                 "--directory", filePath
         };
 
-        Assert.assertThrows(IllegalStateException.class, () -> {
+        Assert.assertThrows(RuntimeException.class, () -> {
             HugeGraphCommand.main(args);
         });
     }

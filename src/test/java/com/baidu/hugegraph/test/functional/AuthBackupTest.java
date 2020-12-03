@@ -19,13 +19,14 @@
 
 package com.baidu.hugegraph.test.functional;
 
-import com.baidu.hugegraph.cmd.HugeGraphCommand;
-import com.baidu.hugegraph.testutil.Assert;
-import com.beust.jcommander.ParameterException;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
+import com.baidu.hugegraph.cmd.HugeGraphCommand;
+import com.baidu.hugegraph.testutil.Assert;
+import com.beust.jcommander.ParameterException;
 
 public class AuthBackupTest extends AuthTest{
 

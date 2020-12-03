@@ -20,10 +20,7 @@
 package com.baidu.hugegraph.manager;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 

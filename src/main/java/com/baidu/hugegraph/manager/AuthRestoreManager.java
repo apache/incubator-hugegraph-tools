@@ -1,19 +1,35 @@
 /*
- * Copyright 2020 HugeGraph Authors
- * restore authority data
- * operation commands include:
- * auth-restore
- * --types : restore data type, the default is 'all',
- * include user,group,target,belong,access
- * --directory : backup directory, the default is './auth-backup'
- * --init-password : if the restore data includes user,
- * an initialization password must be set
- * --strategy : restore strategy include 'stop' and 'ignore',
- * the default is 'stop'
+ * Copyright 2017 HugeGraph Authors
  *
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. The ASF
+ * licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.baidu.hugegraph.manager;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 
 import com.baidu.hugegraph.api.API;
 import com.baidu.hugegraph.base.HdfsDirectory;
@@ -31,18 +47,6 @@ import com.baidu.hugegraph.util.JsonUtil;
 import com.beust.jcommander.ParameterException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 
 public class AuthRestoreManager extends BackupRestoreBaseManager {
 
@@ -166,7 +170,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                 }
                 if (conflict > this.conflict_status) {
                     E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                    "Restore users conflict of properties");
+                                    "Restore users conflict with stop strategy, " +
+                                    "user name is s%", restoreUser.name());
                     E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
                                     this.strategy == AuthRestoreStrategy.IGNORE,
                                     "Restore users strategy is not fund");
@@ -200,7 +205,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                 }
                 if (conflict > this.conflict_status) {
                     E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                    "Restore groups conflict");
+                                    "Restore groups conflict with stop strategy, " +
+                                    "group name is s%", restoreGroup.name());
                     E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
                                     this.strategy == AuthRestoreStrategy.IGNORE,
                                     "Restore groups strategy is not fund");
@@ -239,7 +245,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                 }
                 if (conflict > this.conflict_status) {
                     E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                    "Restore targets conflict with stop strategy");
+                                    "Restore targets conflict with stop strategy, " +
+                                    "target name is s%", restoreTarget.name());
                     E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
                                     this.strategy == AuthRestoreStrategy.IGNORE,
                                     "Restore targets strategy is not fund");
@@ -272,7 +279,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                          this.idsMap.get(restoreBelong.group());
             if (belongMap.containsKey(ids)) {
                 E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                "Restore belongs conflict with stop strategy");
+                                "Restore belongs conflict with stop strategy, " +
+                                "belong id is s%", restoreBelong.id());
                 E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
                                 this.strategy == AuthRestoreStrategy.IGNORE,
                                 "Restore belongs strategy is not fund");
@@ -301,7 +309,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                          this.idsMap.get(restoreAccess.target());
             if (accessMap.containsKey(ids)) {
                 E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                "Restore accesses conflict with stop strategy");
+                                "Restore accesses conflict with stop strategy," +
+                                "accesses id is s%", restoreAccess.id());
                 E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
                                 this.strategy == AuthRestoreStrategy.IGNORE,
                                 "Restore accesses strategy is not fund");
@@ -451,7 +460,5 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         } else {
             this.initPassword = password;
         }
-
     }
-
 }

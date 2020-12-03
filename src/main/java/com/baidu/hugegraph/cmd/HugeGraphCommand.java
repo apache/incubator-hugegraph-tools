@@ -19,6 +19,13 @@
 
 package com.baidu.hugegraph.cmd;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.Scanner;
+
 import com.baidu.hugegraph.base.Printer;
 import com.baidu.hugegraph.base.ToolClient;
 import com.baidu.hugegraph.base.ToolClient.ConnectionInfo;
@@ -32,12 +39,6 @@ import com.baidu.hugegraph.util.E;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParametersDelegate;
-
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.baidu.hugegraph.manager.BackupManager.BACKUP_DEFAULT_TIMEOUT;
 
@@ -338,7 +339,7 @@ public class HugeGraphCommand {
                               taskClear.force());
                 break;
             case "auth-backup":
-                Printer.print("Auth backup start !");
+                Printer.print("Auth backup start...");
                 SubCommands.AuthBackup authBackup = this.subCommand(subCmd);
                 AuthBackupManager authBackupManager = manager(AuthBackupManager.class);
 
@@ -346,7 +347,7 @@ public class HugeGraphCommand {
                 authBackupManager.authBackup(authBackup.types());
                 break;
             case "auth-restore":
-                Printer.print("Auth restore start !");
+                Printer.print("Auth restore start...");
                 SubCommands.AuthRestore authRestore = this.subCommand(subCmd);
                 AuthRestoreManager authRestoreManager = manager(AuthRestoreManager.class);
 
@@ -428,51 +429,96 @@ public class HugeGraphCommand {
     }
 
     public static void main(String[] args) {
-        List<String> list = Arrays.asList(args);
-        if (!list.contains(TEST_MODE)) {
-            mainMode(args);
-        } else {
-            testMode(args);
+        HugeGraphCommand cmd = new HugeGraphCommand();
+
+        JCommander jCommander = parseJCommand(args, cmd);
+        if (jCommander == null && isTestMode(args)) {
+            throw new ParameterException(
+                      "Command typing error, " +
+                      "please make sure your command");
+        } else if (jCommander == null) {
+            System.exit(-1);
+        }
+
+        try {
+            cmd.execute(jCommander.getParsedCommand(), jCommander);
+        } catch (Exception e) {
+            Printer.print("Exception in 'main' is %s", e);
+            if (!isTestMode(args)) {
+                if (isPrintStackException()) {
+                    e.printStackTrace();
+                }
+                System.exit(-1);
+            } else {
+                throw new RuntimeException(
+                          "Exception in 'main' is", e);
+            }
+        }
+
+        if (!isTestMode(args)) {
+            System.exit(0);
         }
     }
 
-    public static void mainMode(String[] args) {
-        HugeGraphCommand cmd = new HugeGraphCommand();
+    public static JCommander parseJCommand(String[] args, HugeGraphCommand cmd) {
         JCommander jCommander = cmd.jCommander();
 
         if (args.length == 0) {
             jCommander.usage();
-            System.exit(-1);
+            return null;
         }
         try {
             jCommander.parse(args);
         } catch (ParameterException e) {
             Printer.print(e.getMessage());
-            System.exit(-1);
+            throw new ParameterException(String.format(
+                      "make sure your command, you can use " +
+                      "command 'hugegraph help'."), e);
         }
 
         String subCommand = jCommander.getParsedCommand();
         if (subCommand == null) {
-            Printer.print("Must provide one sub-command");
-            jCommander.usage();
-            System.exit(-1);
+            printCommonCommand(jCommander);
+            return null;
         }
-        try {
-            cmd.execute(subCommand, jCommander);
-        } catch (Exception e) {
-            Printer.print("Exception in 'main' is %s", e);
-            System.exit(-1);
-        }
-        System.exit(0);
+
+        return jCommander;
     }
 
-    public static void testMode(String[] args) {
-        HugeGraphCommand cmd = new HugeGraphCommand();
-        JCommander jCommander = cmd.jCommander();
-
-        jCommander.parse(args);
-        String subCommand = jCommander.getParsedCommand();
-        cmd.execute(subCommand, jCommander);
+    private static boolean isTestMode(String[] args) {
+        List<String> list = Arrays.asList(args);
+        return list.contains(TEST_MODE);
     }
 
+    public static boolean isPrintStackException() {
+        System.out.println("Input yes or no to view the stack " +
+                           "information for the exception : ");
+        Scanner scan = new Scanner(System.in);
+        while (true) {
+             String info = scan.nextLine();
+             if (info.equalsIgnoreCase("yes")) {
+                 return true;
+             } else if (info.equalsIgnoreCase("no")) {
+                 return false;
+             } else {
+                 System.out.println(" Unrecognized command : "
+                                    + info);
+             }
+        }
+    }
+
+    public static void printCommonCommand(JCommander jCommander) {
+        Printer.print("======================================");
+        Printer.print("Warning : must provide one sub-command");
+        Printer.print("======================================");
+        Printer.print("Here are some common sub-command :");
+        Map<String, JCommander> map = jCommander.getCommands();
+        for (String key : map.keySet()) {
+             Printer.print("||"+key);
+        }
+        Printer.print("======================================");
+        Printer.print("You can use 'help' to see more detailed " +
+                      "\ncommands, such as './bin/hugegraph help'");
+        Printer.print("======================================");
+    }
 }

@@ -19,15 +19,21 @@
 
 package com.baidu.hugegraph.test.functional;
 
+import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Paths;
+import java.util.List;
+
 import com.baidu.hugegraph.api.API;
-import com.baidu.hugegraph.base.Printer;
 import com.baidu.hugegraph.exception.ToolsException;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.ListUtils;
-
-import java.io.*;
-import java.nio.file.Paths;
-import java.util.List;
 
 public class FileUtil {
 
@@ -63,7 +69,7 @@ public class FileUtil {
 
     public static void clearFile(String filePath) {
         File file = new File(filePath);
-        if(file.exists()) {
+        if (file.exists()) {
             String[] files = file.list();
             for (int i = 0; i < files.length; i++) {
                 File fileDir = new File(file, files[i]);
@@ -74,61 +80,37 @@ public class FileUtil {
 
     public static long writeText(String filePath, List<?> list) {
         long count = 0L;
-        FileOutputStream os = null;
-        try {
-            os = new FileOutputStream(filePath);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(LBUF_SIZE);
-            StringBuilder builder = new StringBuilder(LBUF_SIZE);
-
-            for (Object e : list) {
-                count++;
-                builder.append(e).append("\n");
-            }
-            baos.write(builder.toString().getBytes(API.CHARSET));
-            os.write(baos.toByteArray());
-        } catch (Throwable e) {
-            throw new ToolsException("Failed writeText file path is %s",
-                      e, filePath);
-        }finally {
-            if(os != null) {
-                try {
-                    os.close();
-                }catch (Exception e) {
-                    Printer.print("Failed to close file");
-                }
-
-            }
-
+        try (FileOutputStream os = new FileOutputStream(filePath);
+             ByteArrayOutputStream baos = new ByteArrayOutputStream(LBUF_SIZE)) {
+             StringBuilder builder = new StringBuilder(LBUF_SIZE);
+             for (Object e : list) {
+                  count++;
+                  builder.append(e).append("\n");
+             }
+             baos.write(builder.toString().getBytes(API.CHARSET));
+             os.write(baos.toByteArray());
+        } catch (IOException e) {
+             throw new ToolsException("Failed writeText file path is %s",
+                       e, filePath);
         }
+
         return count;
     }
 
     public static List<String> read(String filePath) {
         List<String> resultList = Lists.newArrayList();
-        InputStream is = null;
-        try {
-            is = new FileInputStream(filePath);
-            InputStreamReader isr = new InputStreamReader(is, API.CHARSET);
-            BufferedReader reader = new BufferedReader(isr);
-            String line;
-            while ((line = reader.readLine()) != null) {
-                    resultList.add(line);
-            }
-        }catch (Exception e) {
-            throw new ToolsException("Failed read file path is %s",
-                      e, filePath);
-        }finally {
-            if(is != null) {
-                try {
-                    is.close();
-                }catch (Exception e) {
-                    Printer.print("Failed to close file");
-                }
-
-            }
-
+        try (InputStream is = new FileInputStream(filePath);
+             InputStreamReader isr = new InputStreamReader(is, API.CHARSET)) {
+             BufferedReader reader = new BufferedReader(isr);
+             String line;
+             while ((line = reader.readLine()) != null) {
+                 resultList.add(line);
+             }
+        } catch (IOException e) {
+             throw new ToolsException("Failed read file path is %s",
+                       e, filePath);
         }
+
         return resultList;
     }
-
 }

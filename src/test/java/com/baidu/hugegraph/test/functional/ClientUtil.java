@@ -52,5 +52,4 @@ public class ClientUtil {
                                     .configSSL(trustStoreFile, trustStorePassword)
                                     .build();
     }
-
 }

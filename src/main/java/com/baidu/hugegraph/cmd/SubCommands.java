@@ -19,6 +19,17 @@
 
 package com.baidu.hugegraph.cmd;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import com.baidu.hugegraph.api.API;
 import com.baidu.hugegraph.constant.AuthRestoreStrategy;
 import com.baidu.hugegraph.manager.TasksManager;
@@ -26,16 +37,16 @@ import com.baidu.hugegraph.structure.constant.GraphMode;
 import com.baidu.hugegraph.structure.constant.HugeType;
 import com.baidu.hugegraph.util.E;
 import com.baidu.hugegraph.util.InsertionOrderUtil;
-import com.beust.jcommander.*;
+import com.beust.jcommander.DynamicParameter;
+import com.beust.jcommander.IParameterValidator;
+import com.beust.jcommander.IStringConverter;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
+import com.beust.jcommander.Parameters;
+import com.beust.jcommander.ParametersDelegate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
 
 public class SubCommands {
 
@@ -686,12 +697,13 @@ public class SubCommands {
 
         @Parameter(names = {"--huge-types", "-t"},
                    listConverter = HugeTypeListConverter.class,
-                   description = "Type of schema/data. " +
-                                 "Concat with ',' if more than one. " +
-                                 "'all' means all vertices, edges and schema," +
-                                 " in other words, 'all' equals with " +
-                                 "'vertex,edge,vertex_label," +
-                                 "edge_label,property_key,index_label'")
+                   description = "Type of schema/data. Concat with ',' if more " +
+                                 "than one. other types include ‘all’ and ‘schema’" +
+                                 " .’all' means all vertices, edges and schema,in " +
+                                 "other words, 'all' equals with 'vertex,edge," +
+                                 "vertex_label,edge_label,property_key,index_label’." +
+                                 " ‘schema’ equals with 'vertex_label,edge_label," +
+                                 "property_key,index_label'.")
         public List<HugeType> types = HugeTypeListConverter.ALL_TYPES;
     }
 
@@ -883,12 +895,16 @@ public class SubCommands {
 
         @Parameter(names = {"--strategy"},
                    converter = AuthStrategyConverter.class,
-                   description = "restore strategy, " +
-                                 "include: [stop, ignore]")
+                   description = "The strategy that needs to be chosen in the " +
+                                 "event of a conflict in restore. strategy include " +
+                                 "’stop’ and ‘ignore’, default is ’stop’. ’stop’ means " +
+                                 "if there a conflict, stop restore. ‘ignore’ means if " +
+                                 "there a conflict, ignore and continue to restore.")
         public String strategy = AuthStrategyConverter.strategy;
 
         @Parameter(names = {"--init-password"}, arity = 1,
-                   description = "init password")
+                   description = "Init user password, if restore type include " +
+                                 "‘user’, must init user password.")
         public String initPassword = StringUtils.EMPTY;
 
         public List<HugeType> types() {
@@ -949,6 +965,11 @@ public class SubCommands {
                 HugeType.VERTEX, HugeType.EDGE
         );
 
+        public static final List<HugeType> SCHEMA_TYPES = ImmutableList.of(
+                HugeType.PROPERTY_KEY, HugeType.VERTEX_LABEL,
+                HugeType.EDGE_LABEL, HugeType.INDEX_LABEL
+        );
+
         @Override
         public List<HugeType> convert(String value) {
             E.checkArgument(value != null && !value.isEmpty(),
@@ -956,6 +977,9 @@ public class SubCommands {
             String[] types = value.split(",");
             if (types.length == 1 && types[0].equalsIgnoreCase("all")) {
                 return ALL_TYPES;
+            }
+            if (types.length == 1 && types[0].equalsIgnoreCase("schema")) {
+                return SCHEMA_TYPES;
             }
             List<HugeType> hugeTypes = new ArrayList<>();
             for (String type : types) {
@@ -973,7 +997,7 @@ public class SubCommands {
     }
 
     public static class AuthHugeTypeConverter
-            implements IStringConverter<List<HugeType>> {
+                  implements IStringConverter<List<HugeType>> {
 
         public static final List<HugeType> AUTH_ALL_TYPES = ImmutableList.of(
                 HugeType.TARGET, HugeType.GROUP,
@@ -1005,7 +1029,7 @@ public class SubCommands {
     }
 
     public static class AuthStrategyConverter
-            implements IStringConverter<String> {
+                  implements IStringConverter<String> {
 
         public static final String strategy = "stop";
 
@@ -1045,7 +1069,7 @@ public class SubCommands {
     }
 
     public static class FileNameToContentConverter
-           implements IStringConverter<String> {
+                  implements IStringConverter<String> {
 
         @Override
         public String convert(String value) {
