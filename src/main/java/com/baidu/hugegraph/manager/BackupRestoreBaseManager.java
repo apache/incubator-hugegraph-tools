@@ -19,6 +19,21 @@
 
 package com.baidu.hugegraph.manager;
 
+import static com.baidu.hugegraph.base.Directory.closeAndIgnoreException;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiConsumer;
+
 import com.baidu.hugegraph.api.API;
 import com.baidu.hugegraph.base.*;
 import com.baidu.hugegraph.cmd.SubCommands;
@@ -29,16 +44,6 @@ import com.baidu.hugegraph.structure.constant.HugeType;
 import com.baidu.hugegraph.structure.graph.Edge;
 import com.baidu.hugegraph.util.E;
 import com.google.common.collect.ImmutableMap;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiConsumer;
-
-import static com.baidu.hugegraph.base.Directory.closeAndIgnoreException;
 
 public class BackupRestoreBaseManager extends RetryManager {
 

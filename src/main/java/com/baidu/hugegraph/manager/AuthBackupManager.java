@@ -42,6 +42,16 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
     }
 
     public void authBackup(List<HugeType> types) {
+        try {
+            this.doAuthBackup(types);
+        } catch (Throwable e) {
+            throw e;
+        } finally {
+            this.shutdown(this.type());
+        }
+    }
+
+    public void doAuthBackup(List<HugeType> types) {
         for (HugeType type : types) {
             switch (type) {
                 case USER:
@@ -64,7 +74,6 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
                               "Bad backup type: %s", type));
             }
         }
-        this.shutdown(this.type());
     }
 
     protected void backupUsers() {

@@ -88,11 +88,17 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
 
     public void authRestore(List<HugeType> types) {
         List<HugeType> sortedHugeTypes = this.sortListByCode(types);
-        this.restore(sortedHugeTypes, AuthRestoreFlow.CHECK.code());
-        this.restore(sortedHugeTypes, AuthRestoreFlow.RESTORE.code());
+        try {
+            this.doAuthRestore(sortedHugeTypes, AuthRestoreFlow.CHECK.code());
+            this.doAuthRestore(sortedHugeTypes, AuthRestoreFlow.RESTORE.code());
+        } catch (Throwable e) {
+            throw e;
+        } finally {
+            this.shutdown(this.type());
+        }
     }
 
-    public void restore(List<HugeType> types, int status) {
+    public void doAuthRestore(List<HugeType> types, int status) {
         for (HugeType type : types) {
             switch (type) {
                 case USER:
@@ -134,9 +140,6 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                     throw new AssertionError(String.format(
                               "Bad restore type: %s", type));
             }
-        }
-        if (status == AuthRestoreFlow.RESTORE.code()) {
-            this.shutdown(this.type());
         }
     }
 
@@ -322,10 +325,10 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
 
     protected void restoreAccesses() {
         int counts = 0;
-        for (Map.Entry<String, Access> entry : accessesByName.entrySet()) {
+        for (Map.Entry<String, Access> entry : this.accessesByName.entrySet()) {
              Access restoreAccess = entry.getValue();
-             restoreAccess.target(idsMap.get(restoreAccess.target().toString()));
-             restoreAccess.group(idsMap.get(restoreAccess.group().toString()));
+             restoreAccess.target(this.idsMap.get(restoreAccess.target().toString()));
+             restoreAccess.group(this.idsMap.get(restoreAccess.group().toString()));
              retry(() -> {
                        return this.client.authManager().createAccess(restoreAccess);
                        }, "Restore access of authority");
@@ -336,10 +339,10 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
 
     protected void restoreBelongs() {
         int counts = 0;
-        for (Map.Entry<String, Belong> entry : belongsByName.entrySet()) {
+        for (Map.Entry<String, Belong> entry : this.belongsByName.entrySet()) {
              Belong restoreBelong = entry.getValue();
-             restoreBelong.user(idsMap.get(restoreBelong.user().toString()));
-             restoreBelong.group(idsMap.get(restoreBelong.group().toString()));
+             restoreBelong.user(this.idsMap.get(restoreBelong.user().toString()));
+             restoreBelong.group(this.idsMap.get(restoreBelong.group().toString()));
              retry(() -> {
                        return this.client.authManager().createBelong(restoreBelong);
                        }, "Restore targets of authority");
@@ -355,7 +358,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              Target target = retry(() -> {
                                        return this.client.authManager().createTarget(restoreTarget);
                                        }, "Restore targets of authority");
-             idsMap.put(restoreTarget.id().toString(), target.id().toString());
+             this.idsMap.put(restoreTarget.id().toString(), target.id().toString());
              counts++;
            }
         Printer.print("Restore targets finished, counts is %s !", counts);
@@ -368,7 +371,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              Group group = retry(() -> {
                                      return this.client.authManager().createGroup(restoreGroup);
                                      }, "Restore groups of authority");
-             idsMap.put(restoreGroup.id().toString(), group.id().toString());
+             this.idsMap.put(restoreGroup.id().toString(), group.id().toString());
              counts++;
         }
         Printer.print("Restore groups finished, counts is %s !", counts);
@@ -382,7 +385,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              User user = retry(() -> {
                                    return this.client.authManager().createUser(restoreUser);
                                    }, "Restore users of authority");
-             idsMap.put(restoreUser.id().toString(), user.id().toString());
+             this.idsMap.put(restoreUser.id().toString(), user.id().toString());
              counts++;
             }
         Printer.print("Restore users finished, counts is %s !", counts);
@@ -404,8 +407,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
     }
 
     private boolean checkIdMaps(String oneId, String otherId) {
-        if (!idsMap.containsKey(oneId) ||
-            !idsMap.containsKey(otherId)) {
+        if (!this.idsMap.containsKey(oneId) ||
+            !this.idsMap.containsKey(otherId)) {
             return true;
         }
         return false;

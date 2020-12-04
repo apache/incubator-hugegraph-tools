@@ -71,17 +71,21 @@ public class DumpGraphManager extends BackupManager {
 
     public void dump() {
         this.startTimer();
+        try {
+            // Fetch data to JsonGraph
+            this.backupVertices();
+            this.backupEdges();
 
-        // Fetch data to JsonGraph
-        this.backupVertices();
-        this.backupEdges();
-
-        // Dump to file
-        for (String table : this.graph.tables()) {
-            this.submit(() -> dump(table, this.graph.table(table).values()));
+            // Dump to file
+            for (String table : this.graph.tables()) {
+                this.submit(() -> dump(table, this.graph.table(table).values()));
+            }
+        } catch (Throwable e) {
+            throw e;
+        } finally {
+            this.shutdown(this.type());
         }
 
-        this.shutdown(this.type());
         this.printSummary("dump graph");
     }
 

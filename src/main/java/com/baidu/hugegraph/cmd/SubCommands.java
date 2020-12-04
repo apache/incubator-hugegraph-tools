@@ -689,8 +689,8 @@ public class SubCommands {
     public static class TestMode {
 
         @Parameter(names = {"--test-mode"}, arity = 1,
-                description = "Test mode")
-        public String testMode = "test";
+                   description = "Whether the hugegraph-tools work in test mode")
+        public boolean testMode = false;
     }
 
     public static class HugeTypes {

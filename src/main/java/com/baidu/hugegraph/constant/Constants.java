@@ -19,35 +19,11 @@
 
 package com.baidu.hugegraph.constant;
 
-public enum AuthRestoreStrategy {
+public final class Constants {
 
-    STOP(1, "stop"),
-    IGNORE(2, "ignore");
+    public static final int EXIT_CODE_ERROR = -1;
 
-    private int code;
-    private String name = null;
-
-    AuthRestoreStrategy(int code, String name) {
-        assert code < 256;
-        this.code = code;
-        this.name = name;
-    }
-
-    public int code() {
-        return this.code;
-    }
-
-    public static AuthRestoreStrategy getEnumByName(String name) {
-        AuthRestoreStrategy[] restoreStrategys = AuthRestoreStrategy.values();
-        for (AuthRestoreStrategy strategy : restoreStrategys) {
-            if (strategy.string().equals(name)) {
-                return strategy;
-            }
-        }
-        return null;
-    }
-
-    public String string() {
-        return this.name;
-    }
+    public static final String INPUT_YES = "yes";
+    public static final String INPUT_Y= "y";
+    public static final String COMMAND_HELP = "help";
 }

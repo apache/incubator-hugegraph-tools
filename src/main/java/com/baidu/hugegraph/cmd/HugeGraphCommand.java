@@ -24,21 +24,33 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.Scanner;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 
 import com.baidu.hugegraph.base.Printer;
 import com.baidu.hugegraph.base.ToolClient;
 import com.baidu.hugegraph.base.ToolClient.ConnectionInfo;
 import com.baidu.hugegraph.base.ToolManager;
-import com.baidu.hugegraph.manager.*;
+import com.baidu.hugegraph.constant.Constants;
+import com.baidu.hugegraph.manager.AuthBackupManager;
+import com.baidu.hugegraph.manager.AuthRestoreManager;
+import com.baidu.hugegraph.manager.BackupManager;
+import com.baidu.hugegraph.manager.DumpGraphManager;
+import com.baidu.hugegraph.manager.GraphsManager;
+import com.baidu.hugegraph.manager.GremlinManager;
+import com.baidu.hugegraph.manager.RestoreManager;
+import com.baidu.hugegraph.manager.TasksManager;
 import com.baidu.hugegraph.structure.Task;
 import com.baidu.hugegraph.structure.constant.GraphMode;
 import com.baidu.hugegraph.structure.gremlin.Result;
 import com.baidu.hugegraph.structure.gremlin.ResultSet;
 import com.baidu.hugegraph.util.E;
+import com.baidu.hugegraph.util.ToolUtil;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParametersDelegate;
+import com.google.common.collect.Lists;
 
 import static com.baidu.hugegraph.manager.BackupManager.BACKUP_DEFAULT_TIMEOUT;
 
@@ -46,9 +58,11 @@ public class HugeGraphCommand {
 
     private static final int DEFAULT_CLEAR_TIMEOUT = 300;
 
-    private static final String TEST_MODE = "--test-mode";
-
     private SubCommands subCommands;
+
+    private JCommander jCommander;
+
+    private List<ToolManager> taskManager = Lists.newArrayList();
 
     @ParametersDelegate
     private SubCommands.Url url = new SubCommands.Url();
@@ -78,6 +92,7 @@ public class HugeGraphCommand {
 
     public HugeGraphCommand() {
         this.subCommands = new SubCommands();
+        this.jCommander = jCommander();
     }
 
     public Map<String, Object> subCommands() {
@@ -145,11 +160,11 @@ public class HugeGraphCommand {
         this.trustStorePassword.trustStorePassword = trustStorePassword;
     }
 
-    public String testMode() {
+    public boolean testMode() {
         return this.testMode.testMode;
     }
 
-    private void testMode(String testMode) {
+    private void testMode(boolean testMode) {
         this.testMode.testMode = testMode;
     }
 
@@ -181,12 +196,14 @@ public class HugeGraphCommand {
                 Printer.print("Graph '%s' start backup!", this.graph());
                 SubCommands.Backup backup = this.subCommand(subCmd);
                 BackupManager backupManager = manager(BackupManager.class);
+                this.taskManager.add(backupManager);
 
                 backupManager.init(backup);
                 backupManager.backup(backup.types());
                 break;
             case "restore":
                 GraphsManager graphsManager = manager(GraphsManager.class);
+                this.taskManager.add(graphsManager);
                 GraphMode mode = graphsManager.mode(this.graph());
                 E.checkState(mode.maintaining(),
                              "Invalid mode '%s' of graph '%s' for restore " +
@@ -195,6 +212,7 @@ public class HugeGraphCommand {
                               this.graph(), mode);
                 SubCommands.Restore restore = this.subCommand(subCmd);
                 RestoreManager restoreManager = manager(RestoreManager.class);
+                this.taskManager.add(restoreManager);
 
                 restoreManager.init(restore);
                 restoreManager.mode(mode);
@@ -212,6 +230,7 @@ public class HugeGraphCommand {
                 }
                 backup = convMigrate2Backup(migrate);
                 backupManager = manager(BackupManager.class);
+                this.taskManager.add(backupManager);
                 backupManager.init(backup);
                 backupManager.backup(backup.types());
 
@@ -224,6 +243,7 @@ public class HugeGraphCommand {
                 this.trustStoreFile(migrate.targetTrustStoreFile());
                 this.trustStorePassword(migrate.targetTrustStorePassword());
                 graphsManager = manager(GraphsManager.class);
+                this.taskManager.add(graphsManager);
                 GraphMode origin = graphsManager.mode(migrate.targetGraph());
                 // Set target graph mode
                 mode = migrate.mode();
@@ -237,6 +257,7 @@ public class HugeGraphCommand {
                 String directory = backupManager.directory().directory();
                 restore = convMigrate2Restore(migrate, directory);
                 restoreManager = manager(RestoreManager.class);
+                this.taskManager.add(restoreManager);
                 restoreManager.init(restore);
                 restoreManager.mode(mode);
 
@@ -248,6 +269,7 @@ public class HugeGraphCommand {
                 Printer.print("Graph '%s' start dump!", this.graph());
                 SubCommands.DumpGraph dump = this.subCommand(subCmd);
                 DumpGraphManager dumpManager = manager(DumpGraphManager.class);
+                this.taskManager.add(dumpManager);
 
                 dumpManager.init(dump);
                 dumpManager.dumpFormatter(dump.formatter());
@@ -255,10 +277,12 @@ public class HugeGraphCommand {
                 break;
             case "graph-list":
                 graphsManager = manager(GraphsManager.class);
+                this.taskManager.add(graphsManager);
                 Printer.printList("Graphs", graphsManager.list());
                 break;
             case "graph-get":
                 graphsManager = manager(GraphsManager.class);
+                this.taskManager.add(graphsManager);
                 Printer.printMap("Graph info",
                                  graphsManager.get(this.graph()));
                 break;
@@ -268,23 +292,27 @@ public class HugeGraphCommand {
                     this.timeout(DEFAULT_CLEAR_TIMEOUT);
                 }
                 graphsManager = manager(GraphsManager.class);
+                this.taskManager.add(graphsManager);
                 graphsManager.clear(this.graph(), graphClear.confirmMessage());
                 Printer.print("Graph '%s' is cleared", this.graph());
                 break;
             case "graph-mode-set":
                 SubCommands.GraphModeSet graphModeSet = this.subCommand(subCmd);
                 graphsManager = manager(GraphsManager.class);
+                this.taskManager.add(graphsManager);
                 graphsManager.mode(this.graph(), graphModeSet.mode());
                 Printer.print("Set graph '%s' mode to '%s'",
                               this.graph(), graphModeSet.mode());
                 break;
             case "graph-mode-get":
                 graphsManager = manager(GraphsManager.class);
+                this.taskManager.add(graphsManager);
                 Printer.printKV("Graph mode", graphsManager.mode(this.graph()));
                 break;
             case "gremlin-execute":
                 SubCommands.Gremlin gremlin = this.subCommand(subCmd);
                 GremlinManager gremlinManager = manager(GremlinManager.class);
+                this.taskManager.add(gremlinManager);
                 Printer.print("Run gremlin script");
                 ResultSet result = gremlinManager.execute(gremlin.script(),
                                                           gremlin.bindings(),
@@ -298,6 +326,7 @@ public class HugeGraphCommand {
             case "gremlin-schedule":
                 SubCommands.GremlinJob job = this.subCommand(subCmd);
                 gremlinManager = manager(GremlinManager.class);
+                this.taskManager.add(gremlinManager);
                 Printer.print("Run gremlin script as async job");
                 long taskId = gremlinManager.executeAsTask(job.script(),
                                                            job.bindings(),
@@ -307,6 +336,7 @@ public class HugeGraphCommand {
             case "task-list":
                 SubCommands.TaskList taskList = this.subCommand(subCmd);
                 TasksManager tasksManager = manager(TasksManager.class);
+                this.taskManager.add(tasksManager);
                 List<Task> tasks = tasksManager.list(taskList.status(),
                                                      taskList.limit());
                 List<Object> results = tasks.stream().map(Task::asMap)
@@ -316,24 +346,28 @@ public class HugeGraphCommand {
             case "task-get":
                 SubCommands.TaskGet taskGet = this.subCommand(subCmd);
                 tasksManager = manager(TasksManager.class);
+                this.taskManager.add(tasksManager);
                 Printer.printKV("Task info",
                                 tasksManager.get(taskGet.taskId()).asMap());
                 break;
             case "task-delete":
                 SubCommands.TaskDelete taskDelete = this.subCommand(subCmd);
                 tasksManager = manager(TasksManager.class);
+                this.taskManager.add(tasksManager);
                 tasksManager.delete(taskDelete.taskId());
                 Printer.print("Task '%s' is deleted", taskDelete.taskId());
                 break;
             case "task-cancel":
                 SubCommands.TaskCancel taskCancel = this.subCommand(subCmd);
                 tasksManager = manager(TasksManager.class);
+                this.taskManager.add(tasksManager);
                 tasksManager.cancel(taskCancel.taskId());
                 Printer.print("Task '%s' is cancelled", taskCancel.taskId());
                 break;
             case "task-clear":
                 SubCommands.TaskClear taskClear = this.subCommand(subCmd);
                 tasksManager = manager(TasksManager.class);
+                this.taskManager.add(tasksManager);
                 tasksManager.clear(taskClear.force());
                 Printer.print("Tasks are cleared[force=%s]",
                               taskClear.force());
@@ -342,6 +376,7 @@ public class HugeGraphCommand {
                 Printer.print("Auth backup start...");
                 SubCommands.AuthBackup authBackup = this.subCommand(subCmd);
                 AuthBackupManager authBackupManager = manager(AuthBackupManager.class);
+                this.taskManager.add(authBackupManager);
 
                 authBackupManager.init(authBackup);
                 authBackupManager.authBackup(authBackup.types());
@@ -350,6 +385,7 @@ public class HugeGraphCommand {
                 Printer.print("Auth restore start...");
                 SubCommands.AuthRestore authRestore = this.subCommand(subCmd);
                 AuthRestoreManager authRestoreManager = manager(AuthRestoreManager.class);
+                this.taskManager.add(authRestoreManager);
 
                 authRestoreManager.init(authRestore);
                 authRestoreManager.authRestore(authRestore.types());
@@ -361,6 +397,11 @@ public class HugeGraphCommand {
                 throw new ParameterException(String.format(
                           "Invalid sub-command: %s", subCmd));
         }
+    }
+
+    private void execute(String[] args) {
+        this.parseCommand(args);
+        this.execute(this.jCommander.getParsedCommand(), this.jCommander);
     }
 
     private void checkMainParams() {
@@ -428,97 +469,56 @@ public class HugeGraphCommand {
         return mode;
     }
 
-    public static void main(String[] args) {
-        HugeGraphCommand cmd = new HugeGraphCommand();
-
-        JCommander jCommander = parseJCommand(args, cmd);
-        if (jCommander == null && isTestMode(args)) {
-            throw new ParameterException(
-                      "Command typing error, " +
-                      "please make sure your command");
-        } else if (jCommander == null) {
-            System.exit(-1);
+    public void parseCommand(String[] args) {
+        if (args.length == 0) {
+            ToolUtil.exitWithUsageOrThrow(this.jCommander,
+                                          Constants.EXIT_CODE_ERROR,
+                                          this.testMode());
+        }
+        this.parseCommandForHelp(args);
+        this.jCommander.parse(args);
+        String subCommand = this.jCommander.getParsedCommand();
+        if (subCommand == null) {
+            ToolUtil.printCommandsCategory(this.jCommander);
+            ToolUtil.exitOrThrow(Constants.EXIT_CODE_ERROR, this.testMode());
         }
 
-        try {
-            cmd.execute(jCommander.getParsedCommand(), jCommander);
-        } catch (Exception e) {
-            Printer.print("Exception in 'main' is %s", e);
-            if (!isTestMode(args)) {
-                if (isPrintStackException()) {
-                    e.printStackTrace();
-                }
-                System.exit(-1);
+    }
+
+    public void parseCommandForHelp(String[] args) {
+        String helpValue = Strings.EMPTY;
+        List<String> list = Arrays.asList(args);
+
+        if (list.contains(Constants.COMMAND_HELP) &&
+            list.size() > list.indexOf(Constants.COMMAND_HELP) + 1) {
+            helpValue = list.get(list.indexOf(Constants.COMMAND_HELP) + 1);
+        }
+
+        Map<String, JCommander> commanderMap = this.jCommander.getCommands();
+        if (StringUtils.isNotEmpty(helpValue)) {
+            if (commanderMap.containsKey(helpValue)) {
+                ToolUtil.exitWithUsageOrThrow(commanderMap.get(helpValue),
+                                              Constants.EXIT_CODE_ERROR,
+                                              this.testMode());
             } else {
-                throw new RuntimeException(
-                          "Exception in 'main' is", e);
+                throw new ParameterException(String.format(
+                          "Unexpected help sub-command %s", helpValue));
             }
         }
-
-        if (!isTestMode(args)) {
-            System.exit(0);
-        }
     }
 
-    public static JCommander parseJCommand(String[] args, HugeGraphCommand cmd) {
-        JCommander jCommander = cmd.jCommander();
-
-        if (args.length == 0) {
-            jCommander.usage();
-            return null;
-        }
+    public static void main(String[] args) {
+        HugeGraphCommand cmd = null;
         try {
-            jCommander.parse(args);
-        } catch (ParameterException e) {
-            Printer.print(e.getMessage());
-            throw new ParameterException(String.format(
-                      "make sure your command, you can use " +
-                      "command 'hugegraph help'."), e);
+            cmd = new HugeGraphCommand();
+            cmd.execute(args);
+        } catch (Throwable e) {
+            ToolUtil.printException(e, cmd != null &&
+                                    cmd.testMode());
+        } finally {
+            ToolUtil.shutdown(cmd == null ?
+                              null :
+                              cmd.taskManager);
         }
-
-        String subCommand = jCommander.getParsedCommand();
-        if (subCommand == null) {
-            printCommonCommand(jCommander);
-            return null;
-        }
-
-        return jCommander;
-    }
-
-    private static boolean isTestMode(String[] args) {
-        List<String> list = Arrays.asList(args);
-        return list.contains(TEST_MODE);
-    }
-
-    public static boolean isPrintStackException() {
-        System.out.println("Input yes or no to view the stack " +
-                           "information for the exception : ");
-        Scanner scan = new Scanner(System.in);
-        while (true) {
-             String info = scan.nextLine();
-             if (info.equalsIgnoreCase("yes")) {
-                 return true;
-             } else if (info.equalsIgnoreCase("no")) {
-                 return false;
-             } else {
-                 System.out.println(" Unrecognized command : "
-                                    + info);
-             }
-        }
-    }
-
-    public static void printCommonCommand(JCommander jCommander) {
-        Printer.print("======================================");
-        Printer.print("Warning : must provide one sub-command");
-        Printer.print("======================================");
-        Printer.print("Here are some common sub-command :");
-        Map<String, JCommander> map = jCommander.getCommands();
-        for (String key : map.keySet()) {
-             Printer.print("||"+key);
-        }
-        Printer.print("======================================");
-        Printer.print("You can use 'help' to see more detailed " +
-                      "\ncommands, such as './bin/hugegraph help'");
-        Printer.print("======================================");
     }
 }

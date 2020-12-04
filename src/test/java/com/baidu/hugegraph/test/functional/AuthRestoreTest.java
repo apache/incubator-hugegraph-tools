@@ -58,7 +58,7 @@ public class AuthRestoreTest extends AuthTest{
                       "/auth/auth_accesses.txt");
 
         String[] args = new String[]{
-                "--test-mode", "test",
+                "--test-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -79,14 +79,14 @@ public class AuthRestoreTest extends AuthTest{
         List<Group> groups = this.client.auth().listGroups();
         Map<String, Group> groupMap = Maps.newHashMap();
         for (Group group : groups) {
-            groupMap.put(group.name(), group);
+             groupMap.put(group.name(), group);
         }
         Assert.assertTrue(groupMap.containsKey("test_group6"));
 
         List<Target> targets = this.client.auth().listTargets();
         Map<String, Target> targetMap = Maps.newHashMap();
         for (Target target : targets) {
-            targetMap.put(target.name(), target);
+             targetMap.put(target.name(), target);
         }
         Assert.assertTrue(targetMap.containsKey("test_target1"));
     }
@@ -97,7 +97,7 @@ public class AuthRestoreTest extends AuthTest{
                       "/auth/auth_users.txt");
 
         String[] args = new String[]{
-                "--test-mode", "test",
+                "--test-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -115,13 +115,12 @@ public class AuthRestoreTest extends AuthTest{
         }
 
         Assert.assertTrue(userMap.containsKey("test_user1"));
-
     }
 
     @Test
     public void testAuthRestoreWithException() {
         String[] args = new String[]{
-                "--test-mode", "test",
+                "--test-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -140,7 +139,7 @@ public class AuthRestoreTest extends AuthTest{
                       "/auth/auth_users_conflict.txt");
 
         String[] args = new String[]{
-                "--test-mode", "test",
+                "--test-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -160,7 +159,7 @@ public class AuthRestoreTest extends AuthTest{
                       "/auth/auth_users_conflict.txt");
 
         String[] args = new String[]{
-                "--test-mode", "test",
+                "--test-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -186,7 +185,7 @@ public class AuthRestoreTest extends AuthTest{
                       "/auth/auth_users_conflict.txt");
 
         String[] args = new String[]{
-                "--test-mode", "test",
+                "--test-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -205,7 +204,7 @@ public class AuthRestoreTest extends AuthTest{
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{
-                "--test-mode", "test",
+                "--test-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -225,5 +224,4 @@ public class AuthRestoreTest extends AuthTest{
 
         FileUtil.writeText(restoreFilePath, list);
     }
-
 }

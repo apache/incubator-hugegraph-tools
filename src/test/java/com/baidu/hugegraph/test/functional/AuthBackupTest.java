@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import com.baidu.hugegraph.cmd.HugeGraphCommand;
 import com.baidu.hugegraph.testutil.Assert;
-import com.beust.jcommander.ParameterException;
 
 public class AuthBackupTest extends AuthTest{
 
@@ -38,7 +37,7 @@ public class AuthBackupTest extends AuthTest{
     @Test
     public void testAuthBackup() {
         String[] args = new String[]{
-                "--test-mode", "test",
+                "--test-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-backup"
@@ -54,7 +53,7 @@ public class AuthBackupTest extends AuthTest{
     @Test
     public void testAuthBackupByTypes() {
         String[] args = new String[]{
-                "--test-mode", "test",
+                "--test-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-backup",
@@ -71,14 +70,14 @@ public class AuthBackupTest extends AuthTest{
     @Test
     public void testAuthBackupByTypesWithException() {
         String[] args = new String[]{
-                "--test-mode", "test",
+                "--test-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-backup",
                 "--types", "user,group,test"
         };
 
-        Assert.assertThrows(ParameterException.class, () -> {
+        Assert.assertThrows(RuntimeException.class, () -> {
             HugeGraphCommand.main(args);
         });
     }
@@ -87,7 +86,7 @@ public class AuthBackupTest extends AuthTest{
     public void testAuthBackupByDirectory() {
         String directory = "./backup";
         String[] args = new String[]{
-                "--test-mode", "test",
+                "--test-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-backup",
@@ -100,5 +99,4 @@ public class AuthBackupTest extends AuthTest{
         List<String> fileNames = FileUtil.getFileDirectoryNames(directory);
         Assert.assertTrue(fileNames.size() == 5);
     }
-
 }
