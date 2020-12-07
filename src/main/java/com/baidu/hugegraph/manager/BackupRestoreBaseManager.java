@@ -35,7 +35,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 
 import com.baidu.hugegraph.api.API;
-import com.baidu.hugegraph.base.*;
+import com.baidu.hugegraph.base.Directory;
+import com.baidu.hugegraph.base.HdfsDirectory;
+import com.baidu.hugegraph.base.LocalDirectory;
+import com.baidu.hugegraph.base.Printer;
+import com.baidu.hugegraph.base.RetryManager;
+import com.baidu.hugegraph.base.ToolClient;
 import com.baidu.hugegraph.cmd.SubCommands;
 import com.baidu.hugegraph.concurrent.KeyLock;
 import com.baidu.hugegraph.exception.ToolsException;
@@ -176,13 +181,13 @@ public class BackupRestoreBaseManager extends RetryManager {
         InputStream is = this.inputStream(file);
         try (InputStreamReader isr = new InputStreamReader(is, API.CHARSET);
              BufferedReader reader = new BufferedReader(isr)) {
-             String line;
-             while ((line = reader.readLine()) != null) {
-                 consumer.accept(type.string(), line);
-             }
+            String line;
+            while ((line = reader.readLine()) != null) {
+                consumer.accept(type.string(), line);
+            }
         } catch (IOException e) {
-             throw new ToolsException("Failed to deserialize %s from %s",
-                                      e, type, file);
+            throw new ToolsException("Failed to deserialize %s from %s",
+                                     e, type, file);
         }
     }
 

@@ -1,12 +1,20 @@
 /*
  * Copyright 2017 HugeGraph Authors
- * backup of authority
- * operation commands include:
- * auth-backup
- * --types : backup data type, the default is 'all',
- * include user,group,target,belong,access
- * --directory : backup directory, the default is './auth-backup'
  *
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. See the NOTICE file distributed with this
+ * work for additional information regarding copyright ownership. The ASF
+ * licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.baidu.hugegraph.manager;
@@ -23,7 +31,11 @@ import com.baidu.hugegraph.base.Printer;
 import com.baidu.hugegraph.base.ToolClient;
 import com.baidu.hugegraph.cmd.SubCommands;
 import com.baidu.hugegraph.exception.ToolsException;
-import com.baidu.hugegraph.structure.auth.*;
+import com.baidu.hugegraph.structure.auth.Access;
+import com.baidu.hugegraph.structure.auth.Belong;
+import com.baidu.hugegraph.structure.auth.Group;
+import com.baidu.hugegraph.structure.auth.Target;
+import com.baidu.hugegraph.structure.auth.User;
 import com.baidu.hugegraph.structure.constant.HugeType;
 import com.baidu.hugegraph.util.JsonUtil;
 
@@ -71,7 +83,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
                     break;
                 default:
                     throw new AssertionError(String.format(
-                              "Bad backup type: %s", type));
+                              "Bad auth backup type: %s", type));
             }
         }
     }
@@ -131,7 +143,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
             os.write(baos.toByteArray());
         } catch (Throwable e) {
             throw new ToolsException("Failed to serialize %s to %s",
-                                     e, type, type.string());
+                                     e, list, type.string());
         }
         return count;
     }
@@ -146,5 +158,4 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
                                                          hdfsConf);
         }
     }
-
 }

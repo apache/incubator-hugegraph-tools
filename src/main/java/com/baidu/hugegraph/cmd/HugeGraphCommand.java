@@ -62,7 +62,7 @@ public class HugeGraphCommand {
 
     private JCommander jCommander;
 
-    private List<ToolManager> taskManager = Lists.newArrayList();
+    private List<ToolManager> taskManagers = Lists.newArrayList();
 
     @ParametersDelegate
     private SubCommands.Url url = new SubCommands.Url();
@@ -196,14 +196,14 @@ public class HugeGraphCommand {
                 Printer.print("Graph '%s' start backup!", this.graph());
                 SubCommands.Backup backup = this.subCommand(subCmd);
                 BackupManager backupManager = manager(BackupManager.class);
-                this.taskManager.add(backupManager);
+                this.taskManagers.add(backupManager);
 
                 backupManager.init(backup);
                 backupManager.backup(backup.types());
                 break;
             case "restore":
                 GraphsManager graphsManager = manager(GraphsManager.class);
-                this.taskManager.add(graphsManager);
+                this.taskManagers.add(graphsManager);
                 GraphMode mode = graphsManager.mode(this.graph());
                 E.checkState(mode.maintaining(),
                              "Invalid mode '%s' of graph '%s' for restore " +
@@ -212,7 +212,7 @@ public class HugeGraphCommand {
                               this.graph(), mode);
                 SubCommands.Restore restore = this.subCommand(subCmd);
                 RestoreManager restoreManager = manager(RestoreManager.class);
-                this.taskManager.add(restoreManager);
+                this.taskManagers.add(restoreManager);
 
                 restoreManager.init(restore);
                 restoreManager.mode(mode);
@@ -230,7 +230,7 @@ public class HugeGraphCommand {
                 }
                 backup = convMigrate2Backup(migrate);
                 backupManager = manager(BackupManager.class);
-                this.taskManager.add(backupManager);
+                this.taskManagers.add(backupManager);
                 backupManager.init(backup);
                 backupManager.backup(backup.types());
 
@@ -243,7 +243,7 @@ public class HugeGraphCommand {
                 this.trustStoreFile(migrate.targetTrustStoreFile());
                 this.trustStorePassword(migrate.targetTrustStorePassword());
                 graphsManager = manager(GraphsManager.class);
-                this.taskManager.add(graphsManager);
+                this.taskManagers.add(graphsManager);
                 GraphMode origin = graphsManager.mode(migrate.targetGraph());
                 // Set target graph mode
                 mode = migrate.mode();
@@ -257,7 +257,7 @@ public class HugeGraphCommand {
                 String directory = backupManager.directory().directory();
                 restore = convMigrate2Restore(migrate, directory);
                 restoreManager = manager(RestoreManager.class);
-                this.taskManager.add(restoreManager);
+                this.taskManagers.add(restoreManager);
                 restoreManager.init(restore);
                 restoreManager.mode(mode);
 
@@ -269,7 +269,7 @@ public class HugeGraphCommand {
                 Printer.print("Graph '%s' start dump!", this.graph());
                 SubCommands.DumpGraph dump = this.subCommand(subCmd);
                 DumpGraphManager dumpManager = manager(DumpGraphManager.class);
-                this.taskManager.add(dumpManager);
+                this.taskManagers.add(dumpManager);
 
                 dumpManager.init(dump);
                 dumpManager.dumpFormatter(dump.formatter());
@@ -277,12 +277,12 @@ public class HugeGraphCommand {
                 break;
             case "graph-list":
                 graphsManager = manager(GraphsManager.class);
-                this.taskManager.add(graphsManager);
+                this.taskManagers.add(graphsManager);
                 Printer.printList("Graphs", graphsManager.list());
                 break;
             case "graph-get":
                 graphsManager = manager(GraphsManager.class);
-                this.taskManager.add(graphsManager);
+                this.taskManagers.add(graphsManager);
                 Printer.printMap("Graph info",
                                  graphsManager.get(this.graph()));
                 break;
@@ -292,27 +292,27 @@ public class HugeGraphCommand {
                     this.timeout(DEFAULT_CLEAR_TIMEOUT);
                 }
                 graphsManager = manager(GraphsManager.class);
-                this.taskManager.add(graphsManager);
+                this.taskManagers.add(graphsManager);
                 graphsManager.clear(this.graph(), graphClear.confirmMessage());
                 Printer.print("Graph '%s' is cleared", this.graph());
                 break;
             case "graph-mode-set":
                 SubCommands.GraphModeSet graphModeSet = this.subCommand(subCmd);
                 graphsManager = manager(GraphsManager.class);
-                this.taskManager.add(graphsManager);
+                this.taskManagers.add(graphsManager);
                 graphsManager.mode(this.graph(), graphModeSet.mode());
                 Printer.print("Set graph '%s' mode to '%s'",
                               this.graph(), graphModeSet.mode());
                 break;
             case "graph-mode-get":
                 graphsManager = manager(GraphsManager.class);
-                this.taskManager.add(graphsManager);
+                this.taskManagers.add(graphsManager);
                 Printer.printKV("Graph mode", graphsManager.mode(this.graph()));
                 break;
             case "gremlin-execute":
                 SubCommands.Gremlin gremlin = this.subCommand(subCmd);
                 GremlinManager gremlinManager = manager(GremlinManager.class);
-                this.taskManager.add(gremlinManager);
+                this.taskManagers.add(gremlinManager);
                 Printer.print("Run gremlin script");
                 ResultSet result = gremlinManager.execute(gremlin.script(),
                                                           gremlin.bindings(),
@@ -326,7 +326,7 @@ public class HugeGraphCommand {
             case "gremlin-schedule":
                 SubCommands.GremlinJob job = this.subCommand(subCmd);
                 gremlinManager = manager(GremlinManager.class);
-                this.taskManager.add(gremlinManager);
+                this.taskManagers.add(gremlinManager);
                 Printer.print("Run gremlin script as async job");
                 long taskId = gremlinManager.executeAsTask(job.script(),
                                                            job.bindings(),
@@ -336,7 +336,7 @@ public class HugeGraphCommand {
             case "task-list":
                 SubCommands.TaskList taskList = this.subCommand(subCmd);
                 TasksManager tasksManager = manager(TasksManager.class);
-                this.taskManager.add(tasksManager);
+                this.taskManagers.add(tasksManager);
                 List<Task> tasks = tasksManager.list(taskList.status(),
                                                      taskList.limit());
                 List<Object> results = tasks.stream().map(Task::asMap)
@@ -346,28 +346,28 @@ public class HugeGraphCommand {
             case "task-get":
                 SubCommands.TaskGet taskGet = this.subCommand(subCmd);
                 tasksManager = manager(TasksManager.class);
-                this.taskManager.add(tasksManager);
+                this.taskManagers.add(tasksManager);
                 Printer.printKV("Task info",
                                 tasksManager.get(taskGet.taskId()).asMap());
                 break;
             case "task-delete":
                 SubCommands.TaskDelete taskDelete = this.subCommand(subCmd);
                 tasksManager = manager(TasksManager.class);
-                this.taskManager.add(tasksManager);
+                this.taskManagers.add(tasksManager);
                 tasksManager.delete(taskDelete.taskId());
                 Printer.print("Task '%s' is deleted", taskDelete.taskId());
                 break;
             case "task-cancel":
                 SubCommands.TaskCancel taskCancel = this.subCommand(subCmd);
                 tasksManager = manager(TasksManager.class);
-                this.taskManager.add(tasksManager);
+                this.taskManagers.add(tasksManager);
                 tasksManager.cancel(taskCancel.taskId());
                 Printer.print("Task '%s' is cancelled", taskCancel.taskId());
                 break;
             case "task-clear":
                 SubCommands.TaskClear taskClear = this.subCommand(subCmd);
                 tasksManager = manager(TasksManager.class);
-                this.taskManager.add(tasksManager);
+                this.taskManagers.add(tasksManager);
                 tasksManager.clear(taskClear.force());
                 Printer.print("Tasks are cleared[force=%s]",
                               taskClear.force());
@@ -376,7 +376,7 @@ public class HugeGraphCommand {
                 Printer.print("Auth backup start...");
                 SubCommands.AuthBackup authBackup = this.subCommand(subCmd);
                 AuthBackupManager authBackupManager = manager(AuthBackupManager.class);
-                this.taskManager.add(authBackupManager);
+                this.taskManagers.add(authBackupManager);
 
                 authBackupManager.init(authBackup);
                 authBackupManager.authBackup(authBackup.types());
@@ -385,7 +385,7 @@ public class HugeGraphCommand {
                 Printer.print("Auth restore start...");
                 SubCommands.AuthRestore authRestore = this.subCommand(subCmd);
                 AuthRestoreManager authRestoreManager = manager(AuthRestoreManager.class);
-                this.taskManager.add(authRestoreManager);
+                this.taskManagers.add(authRestoreManager);
 
                 authRestoreManager.init(authRestore);
                 authRestoreManager.authRestore(authRestore.types());
@@ -518,7 +518,7 @@ public class HugeGraphCommand {
         } finally {
             ToolUtil.shutdown(cmd == null ?
                               null :
-                              cmd.taskManager);
+                              cmd.taskManagers);
         }
     }
 }

@@ -34,11 +34,11 @@ import com.beust.jcommander.ParameterException;
 
 public final class ToolUtil {
 
-    public static void shutdown(List<ToolManager> taskManager) {
-        if (CollectionUtils.isEmpty(taskManager)) {
+    public static void shutdown(List<ToolManager> taskManagers) {
+        if (CollectionUtils.isEmpty(taskManagers)) {
             return;
         }
-        for (ToolManager toolManager : taskManager) {
+        for (ToolManager toolManager : taskManagers) {
             toolManager.close();
         }
     }
@@ -71,8 +71,7 @@ public final class ToolUtil {
                                             int code,
                                             boolean isTestNode) {
         if (isTestNode) {
-            throw new ParameterException(
-                      "Failed to parse command");
+            throw new ParameterException("Failed to parse command");
         }
         commander.usage();
         System.exit(code);
@@ -81,8 +80,7 @@ public final class ToolUtil {
     public static void exitOrThrow(int code,
                                    boolean isTestNode) {
         if (isTestNode) {
-            throw new ParameterException(
-                      "Failed to parse command");
+            throw new ParameterException("Failed to parse command");
         }
         System.exit(code);
     }

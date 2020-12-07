@@ -699,11 +699,11 @@ public class SubCommands {
                    listConverter = HugeTypeListConverter.class,
                    description = "Type of schema/data. Concat with ',' if more " +
                                  "than one. other types include ‘all’ and ‘schema’" +
-                                 " .’all' means all vertices, edges and schema,in " +
-                                 "other words, 'all' equals with 'vertex,edge," +
-                                 "vertex_label,edge_label,property_key,index_label’." +
-                                 " ‘schema’ equals with 'vertex_label,edge_label," +
-                                 "property_key,index_label'.")
+                                 " .’all' means all vertices, edges and schema, in " +
+                                 "other words, 'all' equals with 'vertex, edge, " +
+                                 "vertex_label, edge_label, property_key, index_label’." +
+                                 " ‘schema’ equals with 'vertex_label, edge_label, " +
+                                 "property_key, index_label'.")
         public List<HugeType> types = HugeTypeListConverter.ALL_TYPES;
     }
 
@@ -859,6 +859,10 @@ public class SubCommands {
         public void hdfsConf(Map<String, String> hdfsConf) {
             this.hdfsConf = hdfsConf;
         }
+
+        public void retry(int retry) {
+            this.retry.retry = retry;
+        }
     }
 
     public static class AuthBackup extends AuthBackupRestore {
@@ -895,7 +899,7 @@ public class SubCommands {
 
         @Parameter(names = {"--strategy"},
                    converter = AuthStrategyConverter.class,
-                   description = "The strategy that needs to be chosen in the " +
+                   description = "Valid Strategies that needs to be chosen in the " +
                                  "event of a conflict in restore. strategy include " +
                                  "’stop’ and ‘ignore’, default is ’stop’. ’stop’ means " +
                                  "if there a conflict, stop restore. ‘ignore’ means if " +
@@ -930,7 +934,6 @@ public class SubCommands {
         public void initPassword(String initPassword) {
             this.initPassword = initPassword;
         }
-
     }
 
     public static class AuthTypes {
@@ -941,7 +944,7 @@ public class SubCommands {
                                  "Concat with ',' if more than one. " +
                                  "'all' means all auth information" +
                                  " in other words, 'all' equals with " +
-                                 "'user,group,target,belong,access'")
+                                 "'user, group, target, belong, access'")
         public List<HugeType> types = AuthHugeTypeConverter.AUTH_ALL_TYPES;
     }
 

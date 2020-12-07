@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
 import com.baidu.hugegraph.api.API;
@@ -40,7 +39,11 @@ import com.baidu.hugegraph.cmd.SubCommands;
 import com.baidu.hugegraph.constant.AuthRestoreFlow;
 import com.baidu.hugegraph.constant.AuthRestoreStrategy;
 import com.baidu.hugegraph.exception.ToolsException;
-import com.baidu.hugegraph.structure.auth.*;
+import com.baidu.hugegraph.structure.auth.Access;
+import com.baidu.hugegraph.structure.auth.Belong;
+import com.baidu.hugegraph.structure.auth.Group;
+import com.baidu.hugegraph.structure.auth.Target;
+import com.baidu.hugegraph.structure.auth.User;
 import com.baidu.hugegraph.structure.constant.HugeType;
 import com.baidu.hugegraph.util.E;
 import com.baidu.hugegraph.util.JsonUtil;
@@ -67,7 +70,6 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
     private Map<String, Belong> belongsByName;
     private Map<String, Access> accessesByName;
 
-
     public AuthRestoreManager(ToolClient.ConnectionInfo info) {
         super(info, AUTH_RESTORE_DIR);
     }
@@ -76,7 +78,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         this.retry(authRestore.retry());
         this.directory(authRestore.directory(), authRestore.hdfsConf());
         this.ensureDirectoryExist(false);
-        this.initStrategy(authRestore.strategy());
+        this.strategy = AuthRestoreStrategy.getEnumByName(authRestore.strategy());
         this.initPassword(authRestore.types(), authRestore.initPassword());
         this.idsMap = Maps.newHashMap();
         this.usersByName = Maps.newHashMap();
@@ -138,7 +140,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                     break;
                 default:
                     throw new AssertionError(String.format(
-                              "Bad restore type: %s", type));
+                              "Bad auth restore type: %s", type));
             }
         }
     }
@@ -425,7 +427,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              }
         } catch (IOException e) {
             throw new ToolsException("Failed to deserialize %s from %s",
-                                     e, type, type.string());
+                                     e, resultList, type.string());
         }
         return resultList;
     }
@@ -437,16 +439,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         } else {
             // HDFS directory
             super.directory = HdfsDirectory.constructDir(dir, AUTH_BACKUP_NAME,
-                    hdfsConf);
-        }
-    }
-
-    private void initStrategy(String strategy) {
-        if (!StringUtils.isEmpty(strategy)) {
-            this.strategy = AuthRestoreStrategy.getEnumByName(strategy);
-        } else {
-            throw new ParameterException(String.format(
-                      "Bad restore strategy: %s", strategy));
+                                                         hdfsConf);
         }
     }
 
