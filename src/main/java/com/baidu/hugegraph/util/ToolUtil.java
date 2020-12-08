@@ -44,33 +44,29 @@ public final class ToolUtil {
     }
 
     public static void printException(Throwable e,
-                                      boolean isTestMode) {
+                                      boolean testMode) {
         Printer.print("Failed to execute %s", e.getMessage());
-        if (isTestMode) {
+        if (testMode) {
             throw new RuntimeException(e);
         }
-        if (isPrintStackException()) {
-            e.printStackTrace();
-        }
+        printExceptionStackByUserChoise(e);
     }
 
-    public static boolean isPrintStackException() {
+    public static void printExceptionStackByUserChoise(Throwable e) {
         System.out.println("Type y(yes) to print exception stack[default n]?");
         Scanner scan = new Scanner(System.in);
         String inputInfomation = scan.nextLine();
 
         if (inputInfomation.equalsIgnoreCase(Constants.INPUT_YES) ||
             inputInfomation.equalsIgnoreCase(Constants.INPUT_Y)) {
-            return true;
+            e.printStackTrace();
         }
-
-        return false;
     }
 
     public static void exitWithUsageOrThrow(JCommander commander,
                                             int code,
-                                            boolean isTestNode) {
-        if (isTestNode) {
+                                            boolean testMode) {
+        if (testMode) {
             throw new ParameterException("Failed to parse command");
         }
         commander.usage();
@@ -78,8 +74,8 @@ public final class ToolUtil {
     }
 
     public static void exitOrThrow(int code,
-                                   boolean isTestNode) {
-        if (isTestNode) {
+                                   boolean testMode) {
+        if (testMode) {
             throw new ParameterException("Failed to parse command");
         }
         System.exit(code);
@@ -100,17 +96,18 @@ public final class ToolUtil {
     }
 
     public static void printCommandsCategory(JCommander jCommander) {
-        Printer.print("======================================");
+        Printer.print("================================================");
         Printer.print("Warning : must provide one sub-command");
-        Printer.print("======================================");
+        Printer.print("================================================");
         Printer.print("Here are some sub-command :");
-        Map<String, JCommander> map = jCommander.getCommands();
-        for (String key : map.keySet()) {
-             Printer.print("||" + key);
+        Map<String, JCommander> subCommandeMap = jCommander.getCommands();
+        for (String subCommand : subCommandeMap.keySet()) {
+             Printer.print("||" + subCommand);
         }
-        Printer.print("======================================");
-        Printer.print("Can use 'hugegraph help' or " +
-                      "\n'hugegraph help sub-command'");
-        Printer.print("======================================");
+        Printer.print("=================================================");
+        Printer.print("Can use 'hugegraph help' to get detail help info " +
+                      "\nof all sub-commands or 'hugegraph help sub-command' " +
+                      "\nto get detail help info of one sub-command");
+        Printer.print("=================================================");
     }
 }

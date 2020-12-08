@@ -22,6 +22,7 @@ package com.baidu.hugegraph.cmd;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -870,25 +871,12 @@ public class SubCommands {
         @ParametersDelegate
         private AuthTypes types = new AuthTypes();
 
-        @Parameter(names = {"--format"}, arity = 1,
-                   validateWith = {FormatValidator.class},
-                   description = "File format, valid is [json, text]")
-        public String format = "json";
-
         public List<HugeType> types() {
             return this.types.types;
         }
 
         public void types(List<HugeType> types) {
             this.types.types = types;
-        }
-
-        public String format() {
-            return this.format;
-        }
-
-        public void format(String format) {
-            this.format = format;
         }
     }
 
@@ -899,8 +887,8 @@ public class SubCommands {
 
         @Parameter(names = {"--strategy"},
                    converter = AuthStrategyConverter.class,
-                   description = "Valid Strategies that needs to be chosen in the " +
-                                 "event of a conflict in restore. strategy include " +
+                   description = "That Strategy that needs to be chosen in the " +
+                                 "event of a conflict in restore. valid strategies include " +
                                  "’stop’ and ‘ignore’, default is ’stop’. ’stop’ means " +
                                  "if there a conflict, stop restore. ‘ignore’ means if " +
                                  "there a conflict, ignore and continue to restore.")
@@ -940,11 +928,13 @@ public class SubCommands {
 
         @Parameter(names = {"--types", "-t"},
                    listConverter = AuthHugeTypeConverter.class,
-                   description = "Type of auth " +
-                                 "Concat with ',' if more than one. " +
-                                 "'all' means all auth information" +
-                                 " in other words, 'all' equals with " +
-                                 "'user, group, target, belong, access'")
+                   description = "Type of auth concat with ',' if more than one. " +
+                                 "'all' means all auth information in other words, " +
+                                 "'all' equals with 'user, group, target, belong, " +
+                                 "access’. in addition, only ’belong’ or ‘access’ " +
+                                 "can not backup or restore, if type contains ‘belong’ " +
+                                 "then should contains ’user’ and ‘group’. if type " +
+                                 "contains ‘access’ then should contains ’group’ and ‘target’.")
         public List<HugeType> types = AuthHugeTypeConverter.AUTH_ALL_TYPES;
     }
 
@@ -1016,6 +1006,19 @@ public class SubCommands {
             if (types.length == 1 && types[0].equalsIgnoreCase("all")) {
                 return AUTH_ALL_TYPES;
             }
+            List<String> typeList = Arrays.asList(types);
+            E.checkArgument(!typeList.contains(HugeType.BELONG.toString().toLowerCase()) ||
+                            (typeList.contains(HugeType.USER.toString().toLowerCase()) &&
+                            typeList.contains(HugeType.GROUP.toString().toLowerCase())),
+                            "Invalid --type '%s', if type contains ‘belong’" +
+                            " then should contains ’user’ and ‘group’.",
+                            value);
+            E.checkArgument(!typeList.contains(HugeType.ACCESS.toString().toLowerCase()) ||
+                            (typeList.contains(HugeType.GROUP.toString().toLowerCase()) &&
+                            typeList.contains(HugeType.TARGET.toString().toLowerCase())),
+                            "Invalid --type '%s', if type contains ‘access’" +
+                            " then should contains ’group’ and ‘target’.",
+                            value);
             List<HugeType> hugeTypes = new ArrayList<>();
             for (String type : types) {
                 try {

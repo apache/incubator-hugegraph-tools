@@ -486,24 +486,27 @@ public class HugeGraphCommand {
     }
 
     public void parseCommandForHelp(String[] args) {
-        String helpValue = Strings.EMPTY;
+        String subCommand = Strings.EMPTY;
         List<String> list = Arrays.asList(args);
 
-        if (list.contains(Constants.COMMAND_HELP) &&
-            list.size() > list.indexOf(Constants.COMMAND_HELP) + 1) {
-            helpValue = list.get(list.indexOf(Constants.COMMAND_HELP) + 1);
+        if (list.contains(Constants.COMMAND_HELP)) {
+            int index = list.indexOf(Constants.COMMAND_HELP);
+            if (list.size() > index + 1) {
+                subCommand = list.get(index + 1);
+            }
         }
 
         Map<String, JCommander> commanderMap = this.jCommander.getCommands();
-        if (StringUtils.isNotEmpty(helpValue)) {
-            if (commanderMap.containsKey(helpValue)) {
-                ToolUtil.exitWithUsageOrThrow(commanderMap.get(helpValue),
-                                              Constants.EXIT_CODE_ERROR,
-                                              this.testMode());
-            } else {
-                throw new ParameterException(String.format(
-                          "Unexpected help sub-command %s", helpValue));
-            }
+        if (StringUtils.isEmpty(subCommand)) {
+            return;
+        }
+        if (commanderMap.containsKey(subCommand)) {
+            ToolUtil.exitWithUsageOrThrow(commanderMap.get(subCommand),
+                                          Constants.EXIT_CODE_ERROR,
+                                          this.testMode());
+        } else {
+            throw new ParameterException(String.format(
+                      "Unexpected help sub-command %s", subCommand));
         }
     }
 
