@@ -19,29 +19,15 @@
 
 package com.baidu.hugegraph.util;
 
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import org.apache.commons.collections.CollectionUtils;
-
 import com.baidu.hugegraph.base.Printer;
-import com.baidu.hugegraph.base.ToolManager;
 import com.baidu.hugegraph.constant.Constants;
+import com.baidu.hugegraph.exception.ExitException;
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
 
 public final class ToolUtil {
-
-    public static void shutdown(List<ToolManager> taskManagers) {
-        if (CollectionUtils.isEmpty(taskManagers)) {
-            return;
-        }
-        for (ToolManager toolManager : taskManagers) {
-            toolManager.close();
-        }
-    }
 
     public static void printException(Throwable e,
                                       boolean testMode) {
@@ -63,36 +49,15 @@ public final class ToolUtil {
         }
     }
 
-    public static void exitWithUsageOrThrow(JCommander commander,
+    public static void exitWithUsageOrThrow(ExitException e,
                                             int code,
                                             boolean testMode) {
         if (testMode) {
-            throw new ParameterException("Failed to parse command");
-        }
-        commander.usage();
-        System.exit(code);
-    }
-
-    public static void exitOrThrow(int code,
-                                   boolean testMode) {
-        if (testMode) {
-            throw new ParameterException("Failed to parse command");
-        }
-        System.exit(code);
-    }
-
-    public static RuntimeException targetRuntimeException(Throwable t) {
-        Throwable e;
-        if (t instanceof UndeclaredThrowableException) {
-            e = ((UndeclaredThrowableException) t).getUndeclaredThrowable()
-                                                  .getCause();
+            throw e;
         } else {
-            e = t;
+            Printer.print(e.exitMessage());
+            System.exit(code);
         }
-        if (e instanceof RuntimeException) {
-            return (RuntimeException) e;
-        }
-        return new RuntimeException(e);
     }
 
     public static void printCommandsCategory(JCommander jCommander) {
@@ -109,5 +74,12 @@ public final class ToolUtil {
                       "\nof all sub-commands or 'hugegraph help sub-command' " +
                       "\nto get detail help info of one sub-command");
         Printer.print("=================================================");
+    }
+
+    public static String commandUsage(JCommander jCommander) {
+        StringBuilder sb = new StringBuilder();
+        jCommander.usage(sb);
+
+        return sb.toString();
     }
 }

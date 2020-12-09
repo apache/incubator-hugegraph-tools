@@ -30,6 +30,8 @@ import com.baidu.hugegraph.cmd.HugeGraphCommand;
 import com.baidu.hugegraph.driver.HugeClient;
 import com.baidu.hugegraph.structure.auth.*;
 import com.baidu.hugegraph.structure.constant.HugeType;
+import com.baidu.hugegraph.test.util.ClientUtil;
+import com.baidu.hugegraph.test.util.FileUtil;
 import com.baidu.hugegraph.testutil.Assert;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -48,16 +50,11 @@ public class AuthRestoreTest extends AuthTest {
 
     @Test
     public void testAuthRestoreByAll() {
-        this.loadData("./auth-backup/" + HugeType.USER.string(),
-                      "/auth/auth_users.txt");
-        this.loadData("./auth-backup/" + HugeType.TARGET.string(),
-                      "/auth/auth_targets.txt");
-        this.loadData("./auth-backup/" + HugeType.GROUP.string(),
-                      "/auth/auth_groups.txt");
-        this.loadData("./auth-backup/" + HugeType.BELONG.string(),
-                      "/auth/auth_belongs.txt");
-        this.loadData("./auth-backup/" + HugeType.ACCESS.string(),
-                      "/auth/auth_accesses.txt");
+        this.loadData(HugeType.USER.string(), "/auth/auth_users.txt");
+        this.loadData(HugeType.TARGET.string(), "/auth/auth_targets.txt");
+        this.loadData(HugeType.GROUP.string(), "/auth/auth_groups.txt");
+        this.loadData(HugeType.BELONG.string(), "/auth/auth_belongs.txt");
+        this.loadData(HugeType.ACCESS.string(), "/auth/auth_accesses.txt");
 
         String[] args = new String[]{
                 "--test-mode", "true",
@@ -123,8 +120,7 @@ public class AuthRestoreTest extends AuthTest {
 
     @Test
     public void testAuthRestoreByUser() {
-        this.loadData("./auth-backup/" + HugeType.USER.string(),
-                      "/auth/auth_users.txt");
+        this.loadData(HugeType.USER.string(), "/auth/auth_users.txt");
 
         String[] args = new String[]{
                 "--test-mode", "true",
@@ -162,17 +158,16 @@ public class AuthRestoreTest extends AuthTest {
             HugeGraphCommand.main(args);
         }, (e) -> {
             String msg = e.getMessage();
-            Assert.assertTrue(msg.endsWith("The following option is required: [--init-password]"));
+            Assert.assertTrue(msg.endsWith("The following option is " +
+                                           "required: [--init-password]"));
             Assert.assertContains("com.beust.jcommander.ParameterException: The " +
-                                  "following option is required: [--init-password]",
-                                  msg);
+                                  "following option is required: [--init-password]", msg);
         });
     }
 
     @Test
     public void testAuthRestoreByStrategyConflict() {
-        this.loadData("./auth-backup/" + HugeType.USER.string(),
-                      "/auth/auth_users_conflict.txt");
+        this.loadData(HugeType.USER.string(), "/auth/auth_users_conflict.txt");
 
         String[] args = new String[]{
                 "--test-mode", "true",
@@ -189,16 +184,14 @@ public class AuthRestoreTest extends AuthTest {
         }, (e) -> {
             String msg = e.getMessage();
             Assert.assertTrue(msg.startsWith("java.lang.IllegalArgumentException"));
-            Assert.assertContains("java.lang.IllegalArgumentException: " +
-                                  "Restore users conflict with stop strategy",
-                                  msg);
+            Assert.assertContains("java.lang.IllegalArgumentException: Restore " +
+                                  "users conflict with stop strategy", msg);
         });
     }
 
     @Test
     public void testAuthRestoreByStrategyIgnore() {
-        this.loadData("./auth-backup/" + HugeType.USER.string(),
-                      "/auth/auth_users_conflict.txt");
+        this.loadData(HugeType.USER.string(), "/auth/auth_users_conflict.txt");
 
         String[] args = new String[]{
                 "--test-mode", "true",
@@ -241,8 +234,7 @@ public class AuthRestoreTest extends AuthTest {
         }, (e) -> {
             String msg = e.getMessage();
             Assert.assertTrue(msg.startsWith("java.lang.IllegalStateException"));
-            Assert.assertContains("The directory does not exist",
-                                  msg);
+            Assert.assertContains("The directory does not exist", msg);
         });
     }
 
@@ -267,8 +259,7 @@ public class AuthRestoreTest extends AuthTest {
             String msg = e.getMessage();
             Assert.assertTrue(msg.startsWith("com.beust.jcommander.ParameterException:"));
             Assert.assertContains("valid value is 'all' or combination of " +
-                                  "'user,group,target,belong,access'",
-                                  msg);
+                                  "'user,group,target,belong,access'", msg);
         });
     }
 
@@ -292,9 +283,8 @@ public class AuthRestoreTest extends AuthTest {
         }, (e) -> {
             String msg = e.getMessage();
             Assert.assertTrue(msg.startsWith("java.lang.IllegalArgumentException:"));
-            Assert.assertContains("if type contains ‘belong’ then should " +
-                                  "contains ’user’ and ‘group’.",
-                                  msg);
+            Assert.assertContains("if type contains 'belong' then should " +
+                                  "contains 'user' and 'group'.", msg);
         });
     }
 
@@ -318,15 +308,14 @@ public class AuthRestoreTest extends AuthTest {
         }, (e) -> {
             String msg = e.getMessage();
             Assert.assertTrue(msg.startsWith("java.lang.IllegalArgumentException:"));
-            Assert.assertContains("if type contains ‘access’ then should " +
-                                  "contains ’group’ and ‘target’.",
-                                  msg);
+            Assert.assertContains("if type contains 'access' then should " +
+                                  "contains 'group' and 'target'.", msg);
         });
     }
 
     private void loadData(String restoreFilePath, String dataFilePath) {
         List<String> list = FileUtil.read(FileUtil.configPath(dataFilePath));
 
-        FileUtil.writeText(restoreFilePath, list);
+        FileUtil.writeText(DEFAULT_URL + restoreFilePath, list);
     }
 }

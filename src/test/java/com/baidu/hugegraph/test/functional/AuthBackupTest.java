@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.baidu.hugegraph.cmd.HugeGraphCommand;
+import com.baidu.hugegraph.test.util.FileUtil;
 import com.baidu.hugegraph.testutil.Assert;
 
 public class AuthBackupTest extends AuthTest {
@@ -83,8 +84,7 @@ public class AuthBackupTest extends AuthTest {
             String msg = e.getMessage();
             Assert.assertTrue(msg.startsWith("com.beust.jcommander.ParameterException"));
             Assert.assertContains("valid value is 'all' or combination of " +
-                                  "'user,group,target,belong,access'",
-                                  msg);
+                                  "'user,group,target,belong,access'", msg);
         });
     }
 

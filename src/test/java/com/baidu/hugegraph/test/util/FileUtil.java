@@ -17,23 +17,24 @@
  * under the License.
  */
 
-package com.baidu.hugegraph.test.functional;
+package com.baidu.hugegraph.test.util;
 
-import java.io.ByteArrayOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.apache.commons.collections.ListUtils;
+
 import com.baidu.hugegraph.api.API;
 import com.baidu.hugegraph.exception.ToolsException;
 import com.google.common.collect.Lists;
-import org.apache.commons.collections.ListUtils;
 
 public class FileUtil {
 

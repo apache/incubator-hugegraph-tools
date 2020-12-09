@@ -79,7 +79,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         this.retry(authRestore.retry());
         this.directory(authRestore.directory(), authRestore.hdfsConf());
         this.ensureDirectoryExist(false);
-        this.strategy = AuthRestoreStrategy.getEnumByName(authRestore.strategy());
+        this.strategy = AuthRestoreStrategy.fromName(authRestore.strategy());
         this.initPassword(authRestore.types(), authRestore.initPassword());
         this.idsMap = Maps.newHashMap();
         this.usersByName = Maps.newHashMap();

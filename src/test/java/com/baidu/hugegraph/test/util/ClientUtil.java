@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package com.baidu.hugegraph.test.functional;
+package com.baidu.hugegraph.test.util;
 
 import com.baidu.hugegraph.driver.HugeClient;
 
@@ -30,7 +30,7 @@ public class ClientUtil {
     private Integer timeout;
     private String trustStoreFile;
     private String trustStorePassword;
-    protected HugeClient hugeClient;
+    public HugeClient hugeClient;
 
     public ClientUtil(String url, String graph, String username,
                       String password, Integer timeout,

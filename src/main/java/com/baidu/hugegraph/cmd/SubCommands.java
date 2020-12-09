@@ -887,16 +887,16 @@ public class SubCommands {
 
         @Parameter(names = {"--strategy"},
                    converter = AuthStrategyConverter.class,
-                   description = "That Strategy that needs to be chosen in the " +
-                                 "event of a conflict in restore. valid strategies include " +
-                                 "’stop’ and ‘ignore’, default is ’stop’. ’stop’ means " +
-                                 "if there a conflict, stop restore. ‘ignore’ means if " +
+                   description = "The strategy needs to be chosen in the event " +
+                                 "of a conflict in restore. valid strategies include " +
+                                 "'stop' and 'ignore', default is 'stop'. 'stop' means " +
+                                 "if there a conflict, stop restore. 'ignore' means if " +
                                  "there a conflict, ignore and continue to restore.")
         public String strategy = AuthStrategyConverter.strategy;
 
         @Parameter(names = {"--init-password"}, arity = 1,
                    description = "Init user password, if restore type include " +
-                                 "‘user’, must init user password.")
+                                 "'user', must init user password.")
         public String initPassword = StringUtils.EMPTY;
 
         public List<HugeType> types() {
@@ -928,13 +928,13 @@ public class SubCommands {
 
         @Parameter(names = {"--types", "-t"},
                    listConverter = AuthHugeTypeConverter.class,
-                   description = "Type of auth concat with ',' if more than one. " +
-                                 "'all' means all auth information in other words, " +
-                                 "'all' equals with 'user, group, target, belong, " +
-                                 "access’. in addition, only ’belong’ or ‘access’ " +
-                                 "can not backup or restore, if type contains ‘belong’ " +
-                                 "then should contains ’user’ and ‘group’. if type " +
-                                 "contains ‘access’ then should contains ’group’ and ‘target’.")
+                   description = "Type of auth data to restore and backup, concat with " +
+                                 "',' if more than one. 'all' means all auth information" +
+                                 " in other words, 'all' equals with 'user, group, target, " +
+                                 "belong, access’. in addition, only 'belong' or 'access' " +
+                                 "can not backup or restore, if type contains 'belong' " +
+                                 "then should contains 'user' and 'group'. if type contains " +
+                                 "'access’ then should contains 'group' and 'target'.")
         public List<HugeType> types = AuthHugeTypeConverter.AUTH_ALL_TYPES;
     }
 
@@ -1010,14 +1010,14 @@ public class SubCommands {
             E.checkArgument(!typeList.contains(HugeType.BELONG.toString().toLowerCase()) ||
                             (typeList.contains(HugeType.USER.toString().toLowerCase()) &&
                             typeList.contains(HugeType.GROUP.toString().toLowerCase())),
-                            "Invalid --type '%s', if type contains ‘belong’" +
-                            " then should contains ’user’ and ‘group’.",
+                            "Invalid --type '%s', if type contains 'belong'" +
+                            " then should contains 'user' and 'group'.",
                             value);
             E.checkArgument(!typeList.contains(HugeType.ACCESS.toString().toLowerCase()) ||
                             (typeList.contains(HugeType.GROUP.toString().toLowerCase()) &&
                             typeList.contains(HugeType.TARGET.toString().toLowerCase())),
-                            "Invalid --type '%s', if type contains ‘access’" +
-                            " then should contains ’group’ and ‘target’.",
+                            "Invalid --type '%s', if type contains 'access'" +
+                            " then should contains 'group' and 'target'.",
                             value);
             List<HugeType> hugeTypes = new ArrayList<>();
             for (String type : types) {

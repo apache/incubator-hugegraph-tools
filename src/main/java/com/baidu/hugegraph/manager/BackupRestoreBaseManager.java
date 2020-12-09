@@ -19,8 +19,6 @@
 
 package com.baidu.hugegraph.manager;
 
-import static com.baidu.hugegraph.base.Directory.closeAndIgnoreException;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -199,7 +197,7 @@ public class BackupRestoreBaseManager extends RetryManager {
         os = this.directory.outputStream(file, compress, true);
         OutputStream prev = this.outputStreams.putIfAbsent(file, os);
         if (prev != null) {
-            closeAndIgnoreException(os);
+            Directory.closeAndIgnoreException(os);
             os = prev;
         }
         return os;
@@ -213,7 +211,7 @@ public class BackupRestoreBaseManager extends RetryManager {
         is = this.directory.inputStream(file);
         InputStream prev = this.inputStreams.putIfAbsent(file, is);
         if (prev != null) {
-            closeAndIgnoreException(is);
+            Directory.closeAndIgnoreException(is);
             is = prev;
         }
         return is;

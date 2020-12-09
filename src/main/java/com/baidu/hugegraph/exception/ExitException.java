@@ -17,37 +17,34 @@
  * under the License.
  */
 
-package com.baidu.hugegraph.constant;
+package com.baidu.hugegraph.exception;
 
-public enum AuthRestoreStrategy {
+public class ExitException extends RuntimeException {
 
-    STOP(1, "stop"),
-    IGNORE(2, "ignore");
+    private final String exitMessage;
 
-    private int code;
-    private String name = null;
-
-    AuthRestoreStrategy(int code, String name) {
-        assert code < 256;
-        this.code = code;
-        this.name = name;
+    public ExitException(String exitMessage, String message) {
+        super(message);
+        this.exitMessage = exitMessage;
     }
 
-    public int code() {
-        return this.code;
+    public ExitException(String exitMessage, String message, Throwable cause) {
+        super(message, cause);
+        this.exitMessage = exitMessage;
     }
 
-    public static AuthRestoreStrategy fromName(String name) {
-        AuthRestoreStrategy[] restoreStrategys = AuthRestoreStrategy.values();
-        for (AuthRestoreStrategy strategy : restoreStrategys) {
-            if (strategy.string().equals(name)) {
-                return strategy;
-            }
-        }
-        return null;
+    public ExitException(String exitMessage, String message, Object... args) {
+        super(String.format(message, args));
+        this.exitMessage = exitMessage;
     }
 
-    public String string() {
-        return this.name;
+    public ExitException(String exitMessage, String message, Throwable cause,
+                         Object... args) {
+        super(String.format(message, args), cause);
+        this.exitMessage = exitMessage;
+    }
+
+    public String exitMessage() {
+        return this.exitMessage;
     }
 }

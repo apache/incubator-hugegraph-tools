@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
@@ -33,6 +34,7 @@ import com.baidu.hugegraph.base.ToolClient;
 import com.baidu.hugegraph.base.ToolClient.ConnectionInfo;
 import com.baidu.hugegraph.base.ToolManager;
 import com.baidu.hugegraph.constant.Constants;
+import com.baidu.hugegraph.exception.ExitException;
 import com.baidu.hugegraph.manager.AuthBackupManager;
 import com.baidu.hugegraph.manager.AuthRestoreManager;
 import com.baidu.hugegraph.manager.BackupManager;
@@ -60,9 +62,7 @@ public class HugeGraphCommand {
 
     private SubCommands subCommands;
 
-    private JCommander jCommander;
-
-    private List<ToolManager> taskManagers = Lists.newArrayList();
+    private List<ToolManager> taskManagers;
 
     @ParametersDelegate
     private SubCommands.Url url = new SubCommands.Url();
@@ -92,7 +92,7 @@ public class HugeGraphCommand {
 
     public HugeGraphCommand() {
         this.subCommands = new SubCommands();
-        this.jCommander = jCommander();
+        this.taskManagers = Lists.newArrayList();
     }
 
     public Map<String, Object> subCommands() {
@@ -390,9 +390,6 @@ public class HugeGraphCommand {
                 authRestoreManager.init(authRestore);
                 authRestoreManager.authRestore(authRestore.types());
                 break;
-            case "help":
-                jCommander.usage();
-                break;
             default:
                 throw new ParameterException(String.format(
                           "Invalid sub-command: %s", subCmd));
@@ -400,8 +397,8 @@ public class HugeGraphCommand {
     }
 
     private void execute(String[] args) {
-        this.parseCommand(args);
-        this.execute(this.jCommander.getParsedCommand(), this.jCommander);
+        JCommander jCommander = this.parseCommand(args);
+        this.execute(jCommander.getParsedCommand(), jCommander);
     }
 
     private void checkMainParams() {
@@ -469,59 +466,68 @@ public class HugeGraphCommand {
         return mode;
     }
 
-    public void parseCommand(String[] args) {
+    public JCommander parseCommand(String[] args) {
+        JCommander jCommander = this.jCommander();
         if (args.length == 0) {
-            ToolUtil.exitWithUsageOrThrow(this.jCommander,
-                                          Constants.EXIT_CODE_ERROR,
-                                          this.testMode());
+            throw new ExitException(ToolUtil.commandUsage(jCommander),
+                      "Command is null, print help command usage detail and exit");
         }
-        this.parseCommandForHelp(args);
-        this.jCommander.parse(args);
-        String subCommand = this.jCommander.getParsedCommand();
+        this.parseCommandForHelp(args, jCommander);
+        jCommander.parse(args);
+        String subCommand = jCommander.getParsedCommand();
         if (subCommand == null) {
-            ToolUtil.printCommandsCategory(this.jCommander);
-            ToolUtil.exitOrThrow(Constants.EXIT_CODE_ERROR, this.testMode());
+            ToolUtil.printCommandsCategory(jCommander);
+            throw new ExitException("", "Command is null, " +
+                                    "print command category and exit");
         }
-
+        return jCommander;
     }
 
-    public void parseCommandForHelp(String[] args) {
+    public void parseCommandForHelp(String[] args, JCommander jCommander) {
         String subCommand = Strings.EMPTY;
         List<String> list = Arrays.asList(args);
-
-        if (list.contains(Constants.COMMAND_HELP)) {
-            int index = list.indexOf(Constants.COMMAND_HELP);
-            if (list.size() > index + 1) {
-                subCommand = list.get(index + 1);
-            }
-        }
-
-        Map<String, JCommander> commanderMap = this.jCommander.getCommands();
-        if (StringUtils.isEmpty(subCommand)) {
+        if (!list.contains(Constants.COMMAND_HELP)) {
             return;
         }
+        int index = list.indexOf(Constants.COMMAND_HELP);
+        if (list.size() > index + 1) {
+            subCommand = list.get(index + 1);
+        }
+        if (StringUtils.isEmpty(subCommand)) {
+            throw new ExitException(ToolUtil.commandUsage(jCommander),
+                      "Print help command usage detail and exit");
+        }
+
+        Map<String, JCommander> commanderMap = jCommander.getCommands();
         if (commanderMap.containsKey(subCommand)) {
-            ToolUtil.exitWithUsageOrThrow(commanderMap.get(subCommand),
-                                          Constants.EXIT_CODE_ERROR,
-                                          this.testMode());
+            throw new ExitException(ToolUtil.commandUsage(commanderMap.get(subCommand)),
+                      "Print help sub-command usage detail and exit");
         } else {
             throw new ParameterException(String.format(
                       "Unexpected help sub-command %s", subCommand));
         }
     }
 
+    public void shutdown() {
+        if (CollectionUtils.isEmpty(this.taskManagers)) {
+            return;
+        }
+        for (ToolManager toolManager : this.taskManagers) {
+            toolManager.close();
+        }
+    }
+
     public static void main(String[] args) {
-        HugeGraphCommand cmd = null;
+        HugeGraphCommand cmd = new HugeGraphCommand();
         try {
-            cmd = new HugeGraphCommand();
             cmd.execute(args);
+        } catch (ExitException e) {
+            ToolUtil.exitWithUsageOrThrow(e, Constants.EXIT_CODE_ERROR,
+                                          cmd.testMode());
         } catch (Throwable e) {
-            ToolUtil.printException(e, cmd != null &&
-                                    cmd.testMode());
+            ToolUtil.printException(e, cmd.testMode());
         } finally {
-            ToolUtil.shutdown(cmd == null ?
-                              null :
-                              cmd.taskManagers);
+            cmd.shutdown();
         }
     }
 }
