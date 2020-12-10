@@ -30,7 +30,7 @@ public class ClientUtil {
     private Integer timeout;
     private String trustStoreFile;
     private String trustStorePassword;
-    public HugeClient hugeClient;
+    protected HugeClient hugeClient;
 
     public ClientUtil(String url, String graph, String username,
                       String password, Integer timeout,
@@ -51,5 +51,9 @@ public class ClientUtil {
                                     .configTimeout(this.timeout)
                                     .configSSL(trustStoreFile, trustStorePassword)
                                     .build();
+    }
+
+    public HugeClient hugeClient() {
+        return this.hugeClient;
     }
 }

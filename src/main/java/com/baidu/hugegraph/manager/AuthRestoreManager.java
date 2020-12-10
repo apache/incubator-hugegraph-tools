@@ -92,8 +92,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
     public void authRestore(List<HugeType> types) {
         List<HugeType> sortedHugeTypes = this.sortListByCode(types);
         try {
-            this.doAuthRestore(sortedHugeTypes, AuthRestoreFlow.CHECK.code());
-            this.doAuthRestore(sortedHugeTypes, AuthRestoreFlow.RESTORE.code());
+            this.doAuthRestore(sortedHugeTypes, AuthRestoreFlow.CHECK);
+            this.doAuthRestore(sortedHugeTypes, AuthRestoreFlow.RESTORE);
         } catch (Throwable e) {
             throw e;
         } finally {
@@ -101,39 +101,40 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    public void doAuthRestore(List<HugeType> types, int status) {
+    public void doAuthRestore(List<HugeType> types,
+                              AuthRestoreFlow authRestoreFlow) {
         for (HugeType type : types) {
             switch (type) {
                 case USER:
-                    if (status == AuthRestoreFlow.CHECK.code()) {
+                    if (authRestoreFlow == AuthRestoreFlow.CHECK) {
                         this.checkUseConflict();
                     } else {
                         this.restoreUsers();
                     }
                     break;
                 case GROUP:
-                    if (status == AuthRestoreFlow.CHECK.code()) {
+                    if (authRestoreFlow == AuthRestoreFlow.CHECK) {
                         this.checkGroupsConflict();
                     } else {
                         this.restoreGroups();
                     }
                     break;
                 case TARGET:
-                    if (status == AuthRestoreFlow.CHECK.code()) {
+                    if (authRestoreFlow == AuthRestoreFlow.CHECK) {
                         this.checkTargetsConflict();
                     } else {
                         this.restoreTargets();
                     }
                     break;
                 case BELONG:
-                    if (status == AuthRestoreFlow.CHECK.code()) {
+                    if (authRestoreFlow == AuthRestoreFlow.CHECK) {
                         this.checkBelongsConflict();
                     } else {
                         this.restoreBelongs();
                     }
                     break;
                 case ACCESS:
-                    if (status == AuthRestoreFlow.CHECK.code()) {
+                    if (authRestoreFlow == AuthRestoreFlow.CHECK) {
                         this.checkAccessesConflict();
                     } else {
                         this.restoreAccesses();
@@ -176,7 +177,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
             }
             if (conflict > conflict_status) {
                 E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                "Restore users conflict with stop strategy, " +
+                                "Restore users conflict with STOP strategy, " +
                                 "user name is s%", restoreUser.name());
                 E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
                                 this.strategy == AuthRestoreStrategy.IGNORE,
@@ -210,7 +211,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
             }
             if (conflict > conflict_status) {
                 E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                "Restore groups conflict with stop strategy, " +
+                                "Restore groups conflict with STOP strategy, " +
                                 "group name is s%", restoreGroup.name());
                 E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
                                 this.strategy == AuthRestoreStrategy.IGNORE,
@@ -248,7 +249,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
             }
             if (conflict > conflict_status) {
                 E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                "Restore targets conflict with stop strategy, " +
+                                "Restore targets conflict with STOP strategy, " +
                                 "target name is s%", restoreTarget.name());
                 E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
                                 this.strategy == AuthRestoreStrategy.IGNORE,
@@ -279,7 +280,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                          this.idsMap.get(restoreBelong.group());
             if (belongMap.containsKey(ids)) {
                 E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                "Restore belongs conflict with stop strategy, " +
+                                "Restore belongs conflict with STOP strategy, " +
                                 "belong id is s%", restoreBelong.id());
                 E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
                                 this.strategy == AuthRestoreStrategy.IGNORE,
@@ -309,7 +310,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                          this.idsMap.get(restoreAccess.target());
             if (accessMap.containsKey(ids)) {
                 E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                "Restore accesses conflict with stop strategy," +
+                                "Restore accesses conflict with STOP strategy," +
                                 "accesses id is s%", restoreAccess.id());
                 E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
                                 this.strategy == AuthRestoreStrategy.IGNORE,
@@ -327,8 +328,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              restoreAccess.target(this.idsMap.get(restoreAccess.target().toString()));
              restoreAccess.group(this.idsMap.get(restoreAccess.group().toString()));
              retry(() -> {
-                       return this.client.authManager().createAccess(restoreAccess);
-                       }, "Restore access of authority");
+                          return this.client.authManager().createAccess(restoreAccess);
+                         }, "Restore access of authority");
              count++;
             }
         Printer.print("Restore accesses finished, count is %d !", count);
@@ -341,8 +342,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              restoreBelong.user(this.idsMap.get(restoreBelong.user().toString()));
              restoreBelong.group(this.idsMap.get(restoreBelong.group().toString()));
              retry(() -> {
-                       return this.client.authManager().createBelong(restoreBelong);
-                       }, "Restore belongs of authority");
+                          return this.client.authManager().createBelong(restoreBelong);
+                         }, "Restore belongs of authority");
              count++;
             }
         Printer.print("Restore belongs finished, count is %d !", count);
@@ -353,8 +354,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         for (Map.Entry<String, Target> entry : this.targetsByName.entrySet()) {
              Target restoreTarget = entry.getValue();
              Target target = retry(() -> {
-                                       return this.client.authManager().createTarget(restoreTarget);
-                                       }, "Restore targets of authority");
+                                          return this.client.authManager().createTarget(restoreTarget);
+                                         }, "Restore targets of authority");
              this.idsMap.put(restoreTarget.id().toString(), target.id().toString());
              count++;
            }
@@ -366,8 +367,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         for (Map.Entry<String, Group> entry : this.groupsByName.entrySet()) {
              Group restoreGroup = entry.getValue();
              Group group = retry(() -> {
-                                     return this.client.authManager().createGroup(restoreGroup);
-                                     }, "Restore groups of authority");
+                                        return this.client.authManager().createGroup(restoreGroup);
+                                       }, "Restore groups of authority");
              this.idsMap.put(restoreGroup.id().toString(), group.id().toString());
              count++;
         }
@@ -380,8 +381,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              User restoreUser = entry.getValue();
              restoreUser.password(this.initPassword);
              User user = retry(() -> {
-                                   return this.client.authManager().createUser(restoreUser);
-                                   }, "Restore users of authority");
+                                      return this.client.authManager().createUser(restoreUser);
+                                     }, "Restore users of authority");
              this.idsMap.put(restoreUser.id().toString(), user.id().toString());
              count++;
             }

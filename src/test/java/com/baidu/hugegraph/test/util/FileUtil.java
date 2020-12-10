@@ -92,7 +92,7 @@ public class FileUtil {
              os.write(baos.toByteArray());
         } catch (IOException e) {
              throw new ToolsException("Failed writeText file path is %s",
-                       e, filePath);
+                                      e, filePath);
         }
 
         return count;
@@ -109,7 +109,7 @@ public class FileUtil {
              }
         } catch (IOException e) {
              throw new ToolsException("Failed read file path is %s",
-                       e, filePath);
+                                      e, filePath);
         }
 
         return resultList;

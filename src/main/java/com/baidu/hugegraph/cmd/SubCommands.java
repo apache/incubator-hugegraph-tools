@@ -1011,13 +1011,13 @@ public class SubCommands {
                             (typeList.contains(HugeType.USER.toString().toLowerCase()) &&
                             typeList.contains(HugeType.GROUP.toString().toLowerCase())),
                             "Invalid --type '%s', if type contains 'belong'" +
-                            " then should contains 'user' and 'group'.",
+                            " then 'user' and 'group' are required.",
                             value);
             E.checkArgument(!typeList.contains(HugeType.ACCESS.toString().toLowerCase()) ||
                             (typeList.contains(HugeType.GROUP.toString().toLowerCase()) &&
                             typeList.contains(HugeType.TARGET.toString().toLowerCase())),
                             "Invalid --type '%s', if type contains 'access'" +
-                            " then should contains 'group' and 'target'.",
+                            " then 'group' and 'target' are required.",
                             value);
             List<HugeType> hugeTypes = new ArrayList<>();
             for (String type : types) {
@@ -1026,8 +1026,8 @@ public class SubCommands {
                 } catch (IllegalArgumentException e) {
                     throw new ParameterException(String.format(
                               "Invalid --type '%s', valid value is 'all' or " +
-                              "combination of 'user,group,target," +
-                              "belong,access'", type));
+                              "combination of [user,group,target," +
+                              "belong,access]", type));
                 }
             }
             return hugeTypes;

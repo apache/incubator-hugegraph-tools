@@ -33,12 +33,15 @@ public final class ToolUtil {
                                       boolean testMode) {
         Printer.print("Failed to execute %s", e.getMessage());
         if (testMode) {
+            if (e instanceof RuntimeException) {
+                throw  (RuntimeException) e;
+            }
             throw new RuntimeException(e);
         }
-        printExceptionStackByUserChoise(e);
+        printExceptionStackIfNeeded(e);
     }
 
-    public static void printExceptionStackByUserChoise(Throwable e) {
+    public static void printExceptionStackIfNeeded(Throwable e) {
         System.out.println("Type y(yes) to print exception stack[default n]?");
         Scanner scan = new Scanner(System.in);
         String inputInfomation = scan.nextLine();
@@ -55,25 +58,36 @@ public final class ToolUtil {
         if (testMode) {
             throw e;
         } else {
-            Printer.print(e.exitMessage());
+            Printer.print(e.details());
             System.exit(code);
         }
     }
 
-    public static void printCommandsCategory(JCommander jCommander) {
-        Printer.print("================================================");
-        Printer.print("Warning : must provide one sub-command");
-        Printer.print("================================================");
-        Printer.print("Here are some sub-command :");
+    public static String commandsCategoryDetails(JCommander jCommander) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("================================================");
+        sb.append("\n");
+        sb.append("Warning : must provide one sub-command");
+        sb.append("\n");
+        sb.append("================================================");
+        sb.append("\n");
+        sb.append("Here are some sub-command :");
+        sb.append("\n");
         Map<String, JCommander> subCommandeMap = jCommander.getCommands();
         for (String subCommand : subCommandeMap.keySet()) {
-             Printer.print("||" + subCommand);
+            sb.append("||");
+            sb.append(subCommand);
+            sb.append("\n");
         }
-        Printer.print("=================================================");
-        Printer.print("Can use 'hugegraph help' to get detail help info " +
-                      "\nof all sub-commands or 'hugegraph help sub-command' " +
-                      "\nto get detail help info of one sub-command");
-        Printer.print("=================================================");
+        sb.append("================================================");
+        sb.append("\n");
+        sb.append("Can use 'hugegraph help' to get detail help info " +
+                  "of all sub-commands or 'hugegraph help sub-command' " +
+                  "to get detail help info of one sub-command");
+        sb.append("\n");
+        sb.append("================================================");
+
+        return sb.toString();
     }
 
     public static String commandUsage(JCommander jCommander) {

@@ -21,30 +21,30 @@ package com.baidu.hugegraph.exception;
 
 public class ExitException extends RuntimeException {
 
-    private final String exitMessage;
+    private final String details;
 
-    public ExitException(String exitMessage, String message) {
-        super(message);
-        this.exitMessage = exitMessage;
+    public ExitException(String details, String reason) {
+        super(reason);
+        this.details = details;
     }
 
-    public ExitException(String exitMessage, String message, Throwable cause) {
-        super(message, cause);
-        this.exitMessage = exitMessage;
+    public ExitException(String details, String reason, Throwable cause) {
+        super(reason, cause);
+        this.details = details;
     }
 
-    public ExitException(String exitMessage, String message, Object... args) {
-        super(String.format(message, args));
-        this.exitMessage = exitMessage;
+    public ExitException(String details, String reason, Object... args) {
+        super(String.format(reason, args));
+        this.details = details;
     }
 
-    public ExitException(String exitMessage, String message, Throwable cause,
+    public ExitException(String details, String reason, Throwable cause,
                          Object... args) {
-        super(String.format(message, args), cause);
-        this.exitMessage = exitMessage;
+        super(String.format(reason, args), cause);
+        this.details = details;
     }
 
-    public String exitMessage() {
-        return this.exitMessage;
+    public String details() {
+        return this.details;
     }
 }
