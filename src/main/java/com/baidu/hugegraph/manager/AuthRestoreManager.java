@@ -37,7 +37,6 @@ import com.baidu.hugegraph.base.LocalDirectory;
 import com.baidu.hugegraph.base.Printer;
 import com.baidu.hugegraph.base.ToolClient;
 import com.baidu.hugegraph.cmd.SubCommands;
-import com.baidu.hugegraph.constant.AuthRestoreFlow;
 import com.baidu.hugegraph.constant.AuthRestoreStrategy;
 import com.baidu.hugegraph.exception.ToolsException;
 import com.baidu.hugegraph.structure.auth.Access;
@@ -48,7 +47,6 @@ import com.baidu.hugegraph.structure.auth.User;
 import com.baidu.hugegraph.structure.constant.HugeType;
 import com.baidu.hugegraph.util.E;
 import com.baidu.hugegraph.util.JsonUtil;
-import com.beust.jcommander.ParameterException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -92,8 +90,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
     public void authRestore(List<HugeType> types) {
         List<HugeType> sortedHugeTypes = this.sortListByCode(types);
         try {
-            this.doAuthRestore(sortedHugeTypes, AuthRestoreFlow.CHECK);
-            this.doAuthRestore(sortedHugeTypes, AuthRestoreFlow.RESTORE);
+            this.doAuthCheckConflict(sortedHugeTypes);
+            this.doAuthRestore(sortedHugeTypes);
         } catch (Throwable e) {
             throw e;
         } finally {
@@ -101,44 +99,23 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    public void doAuthRestore(List<HugeType> types,
-                              AuthRestoreFlow authRestoreFlow) {
+    private void doAuthCheckConflict(List<HugeType> types) {
         for (HugeType type : types) {
             switch (type) {
                 case USER:
-                    if (authRestoreFlow == AuthRestoreFlow.CHECK) {
-                        this.checkUseConflict();
-                    } else {
-                        this.restoreUsers();
-                    }
+                    this.checkUsersConflict();
                     break;
                 case GROUP:
-                    if (authRestoreFlow == AuthRestoreFlow.CHECK) {
-                        this.checkGroupsConflict();
-                    } else {
-                        this.restoreGroups();
-                    }
+                    this.checkGroupsConflict();
                     break;
                 case TARGET:
-                    if (authRestoreFlow == AuthRestoreFlow.CHECK) {
-                        this.checkTargetsConflict();
-                    } else {
-                        this.restoreTargets();
-                    }
+                    this.checkTargetsConflict();
                     break;
                 case BELONG:
-                    if (authRestoreFlow == AuthRestoreFlow.CHECK) {
-                        this.checkBelongsConflict();
-                    } else {
-                        this.restoreBelongs();
-                    }
+                    this.checkBelongsConflict();
                     break;
                 case ACCESS:
-                    if (authRestoreFlow == AuthRestoreFlow.CHECK) {
-                        this.checkAccessesConflict();
-                    } else {
-                        this.restoreAccesses();
-                    }
+                    this.checkAccessesConflict();
                     break;
                 default:
                     throw new AssertionError(String.format(
@@ -147,7 +124,32 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    protected void checkUseConflict() {
+    private void doAuthRestore(List<HugeType> types) {
+        for (HugeType type : types) {
+            switch (type) {
+                case USER:
+                    this.restoreUsers();
+                    break;
+                case GROUP:
+                    this.restoreGroups();
+                    break;
+                case TARGET:
+                    this.restoreTargets();
+                    break;
+                case BELONG:
+                    this.restoreBelongs();
+                    break;
+                case ACCESS:
+                    this.restoreAccesses();
+                    break;
+                default:
+                    throw new AssertionError(String.format(
+                              "Bad auth restore type: %s", type));
+            }
+        }
+    }
+
+    protected void checkUsersConflict() {
         List<User> users = retry(this.client.authManager()::listUsers,
                                  "Querying users of authority");
         Map<String, User> userMap = Maps.newHashMap();
@@ -328,8 +330,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              restoreAccess.target(this.idsMap.get(restoreAccess.target().toString()));
              restoreAccess.group(this.idsMap.get(restoreAccess.group().toString()));
              retry(() -> {
-                          return this.client.authManager().createAccess(restoreAccess);
-                         }, "Restore access of authority");
+                     return this.client.authManager().createAccess(restoreAccess);
+                     }, "Restore access of authority");
              count++;
             }
         Printer.print("Restore accesses finished, count is %d !", count);
@@ -342,8 +344,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              restoreBelong.user(this.idsMap.get(restoreBelong.user().toString()));
              restoreBelong.group(this.idsMap.get(restoreBelong.group().toString()));
              retry(() -> {
-                          return this.client.authManager().createBelong(restoreBelong);
-                         }, "Restore belongs of authority");
+                     return this.client.authManager().createBelong(restoreBelong);
+                     }, "Restore belongs of authority");
              count++;
             }
         Printer.print("Restore belongs finished, count is %d !", count);
@@ -354,8 +356,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         for (Map.Entry<String, Target> entry : this.targetsByName.entrySet()) {
              Target restoreTarget = entry.getValue();
              Target target = retry(() -> {
-                                          return this.client.authManager().createTarget(restoreTarget);
-                                         }, "Restore targets of authority");
+                                     return this.client.authManager().createTarget(restoreTarget);
+                                     }, "Restore targets of authority");
              this.idsMap.put(restoreTarget.id().toString(), target.id().toString());
              count++;
            }
@@ -367,8 +369,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         for (Map.Entry<String, Group> entry : this.groupsByName.entrySet()) {
              Group restoreGroup = entry.getValue();
              Group group = retry(() -> {
-                                        return this.client.authManager().createGroup(restoreGroup);
-                                       }, "Restore groups of authority");
+                                   return this.client.authManager().createGroup(restoreGroup);
+                                   }, "Restore groups of authority");
              this.idsMap.put(restoreGroup.id().toString(), group.id().toString());
              count++;
         }
@@ -381,8 +383,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
              User restoreUser = entry.getValue();
              restoreUser.password(this.initPassword);
              User user = retry(() -> {
-                                      return this.client.authManager().createUser(restoreUser);
-                                     }, "Restore users of authority");
+                                 return this.client.authManager().createUser(restoreUser);
+                                 }, "Restore users of authority");
              this.idsMap.put(restoreUser.id().toString(), user.id().toString());
              count++;
             }
@@ -447,7 +449,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
 
     public void initPassword(List<HugeType> types, String password) {
         if (types.contains(HugeType.USER) && Strings.isEmpty(password)) {
-            throw new ParameterException(String.format(
+            throw new IllegalArgumentException(String.format(
                       "The following option is required: [--init-password]"));
         } else {
             this.initPassword = password;

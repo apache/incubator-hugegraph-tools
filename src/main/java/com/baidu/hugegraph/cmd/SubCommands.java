@@ -687,11 +687,12 @@ public class SubCommands {
         public String trustStorePassword;
     }
 
-    public static class TestMode {
+    public static class ThrowMode {
 
-        @Parameter(names = {"--test-mode"}, arity = 1,
-                   description = "Whether the hugegraph-tools work in test mode")
-        public boolean testMode = false;
+        @Parameter(names = {"--throw-mode"}, arity = 1,
+                   description = "Whether the hugegraph-tools work " +
+                                 "to throw an exception")
+        public boolean throwMode = false;
     }
 
     public static class HugeTypes {
@@ -1011,14 +1012,12 @@ public class SubCommands {
                             (typeList.contains(HugeType.USER.toString().toLowerCase()) &&
                             typeList.contains(HugeType.GROUP.toString().toLowerCase())),
                             "Invalid --type '%s', if type contains 'belong'" +
-                            " then 'user' and 'group' are required.",
-                            value);
+                            " then 'user' and 'group' are required.", value);
             E.checkArgument(!typeList.contains(HugeType.ACCESS.toString().toLowerCase()) ||
                             (typeList.contains(HugeType.GROUP.toString().toLowerCase()) &&
                             typeList.contains(HugeType.TARGET.toString().toLowerCase())),
                             "Invalid --type '%s', if type contains 'access'" +
-                            " then 'group' and 'target' are required.",
-                            value);
+                            " then 'group' and 'target' are required.", value);
             List<HugeType> hugeTypes = new ArrayList<>();
             for (String type : types) {
                 try {
@@ -1043,14 +1042,11 @@ public class SubCommands {
         public String convert(String value) {
             E.checkArgument(value != null && !value.isEmpty(),
                             "Strategy can't be null or empty");
-            if (AuthRestoreStrategy.STOP.string().equals(value) ||
-                AuthRestoreStrategy.IGNORE.string().equals(value)) {
-                return value;
-            } else {
-                throw new ParameterException(String.format(
-                          "Invalid --strategy '%s', valid value is 'stop' or " +
-                          "'ignore", value));
-            }
+            E.checkArgument(AuthRestoreStrategy.STOP.string().equals(value) ||
+                            AuthRestoreStrategy.IGNORE.string().equals(value),
+                            "Invalid --strategy '%s', valid value is" +
+                            " 'stop' or 'ignore", value);
+            return value;
         }
     }
 

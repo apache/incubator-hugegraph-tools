@@ -19,32 +19,58 @@
 
 package com.baidu.hugegraph.exception;
 
+import com.baidu.hugegraph.constant.Constants;
+
 public class ExitException extends RuntimeException {
 
     private final String details;
+    private final Integer exitCode;
 
     public ExitException(String details, String reason) {
         super(reason);
         this.details = details;
+        this.exitCode = Constants.EXIT_CODE_NORMAL;
     }
 
-    public ExitException(String details, String reason, Throwable cause) {
+    public ExitException(Integer exitCode, String details,
+                         String reason) {
+        super(reason);
+        this.details = details;
+        this.exitCode = exitCode;
+    }
+
+    public ExitException(Integer exitCode, String details,
+                         String reason, Throwable cause) {
         super(reason, cause);
         this.details = details;
+        this.exitCode = exitCode;
     }
 
-    public ExitException(String details, String reason, Object... args) {
+    public ExitException(Integer exitCode, String details,
+                         String reason, Object... args) {
         super(String.format(reason, args));
         this.details = details;
+        this.exitCode = exitCode;
     }
 
-    public ExitException(String details, String reason, Throwable cause,
+    public ExitException(Integer exitCode, String details,
+                         String reason, Throwable cause,
                          Object... args) {
         super(String.format(reason, args), cause);
         this.details = details;
+        this.exitCode = exitCode;
     }
 
     public String details() {
         return this.details;
+    }
+
+    public Integer exitCode() {
+        return this.exitCode;
+    }
+
+    public static ExitException exception(String details, String reason) {
+        return new ExitException(Constants.EXIT_CODE_ERROR,
+                                 details, reason);
     }
 }

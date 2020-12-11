@@ -25,7 +25,8 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     AuthBackupTest.class,
-    AuthRestoreTest.class
+    AuthRestoreTest.class,
+    CommandTest.class
 })
 public class FuncTestSuite {
 }

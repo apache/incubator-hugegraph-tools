@@ -22,8 +22,10 @@ package com.baidu.hugegraph.constant;
 public final class Constants {
 
     public static final int EXIT_CODE_ERROR = -1;
+    public static final int EXIT_CODE_NORMAL = 0;
 
     public static final String INPUT_YES = "yes";
     public static final String INPUT_Y= "y";
     public static final String COMMAND_HELP = "help";
+    public static final String COMMAND_THROW_MODE = "--throw-mode";
 }

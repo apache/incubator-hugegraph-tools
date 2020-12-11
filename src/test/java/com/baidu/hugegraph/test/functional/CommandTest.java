@@ -19,90 +19,80 @@
 
 package com.baidu.hugegraph.test.functional;
 
-import java.util.List;
-
-import org.junit.Before;
 import org.junit.Test;
 
 import com.baidu.hugegraph.cmd.HugeGraphCommand;
-import com.baidu.hugegraph.test.util.FileUtil;
+import com.baidu.hugegraph.exception.ExitException;
 import com.baidu.hugegraph.testutil.Assert;
-import com.beust.jcommander.ParameterException;
 
-public class AuthBackupTest extends AuthTest {
-
-    @Before
-    public void init() {
-        FileUtil.clearFile(DEFAULT_URL);
-    }
+public class CommandTest extends AuthTest {
 
     @Test
-    public void testAuthBackup() {
+    public void helpCommandTest() {
         String[] args = new String[]{
                 "--throw-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
-                "auth-backup"
+                "help"
         };
 
-        HugeGraphCommand.main(args);
-
-        Assert.assertTrue(FileUtil.checkFileExists(DEFAULT_URL));
-        List<String> fileNames = FileUtil.getFileDirectoryNames(DEFAULT_URL);
-        Assert.assertTrue(fileNames.size() == 5);
-    }
-
-    @Test
-    public void testAuthBackupByTypes() {
-        String[] args = new String[]{
-                "--throw-mode", "true",
-                "--user", USER_NAME,
-                "--password", USER_PASSWORD,
-                "auth-backup",
-                "--types", "user,group"
-        };
-
-        HugeGraphCommand.main(args);
-
-        Assert.assertTrue(FileUtil.checkFileExists(DEFAULT_URL));
-        List<String> fileNames = FileUtil.getFileDirectoryNames(DEFAULT_URL);
-        Assert.assertTrue(fileNames.size() == 2);
-    }
-
-    @Test
-    public void testAuthBackupByTypesWithException() {
-        String[] args = new String[]{
-                "--throw-mode", "true",
-                "--user", USER_NAME,
-                "--password", USER_PASSWORD,
-                "auth-backup",
-                "--types", "user,group,test"
-        };
-
-        Assert.assertThrows(ParameterException.class, () -> {
+        Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
         }, (e) -> {
-            Assert.assertContains("valid value is 'all' or combination of " +
-                                  "[user,group,target,belong,access]",
+            Assert.assertContains("Command : hugegragh help",
                                   e.getMessage());
         });
     }
 
     @Test
-    public void testAuthBackupByDirectory() {
-        String directory = "./backup";
+    public void helpSubCommandTest() {
         String[] args = new String[]{
                 "--throw-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
-                "auth-backup",
-                "--directory", directory
+                "help", "auth-backup"
         };
 
-        HugeGraphCommand.main(args);
+        Assert.assertThrows(ExitException.class, () -> {
+            HugeGraphCommand.main(args);
+        }, (e) -> {
+            Assert.assertContains("Hugegragh help auth-backup",
+                                  e.getMessage());
+        });
+    }
 
-        Assert.assertTrue(FileUtil.checkFileExists(directory));
-        List<String> fileNames = FileUtil.getFileDirectoryNames(directory);
-        Assert.assertTrue(fileNames.size() == 5);
+    @Test
+    public void badHelpSubCommandTest() {
+        String badCommand = "asd";
+        String[] args = new String[]{
+                "--throw-mode", "true",
+                "--user", USER_NAME,
+                "--password", USER_PASSWORD,
+                "help", badCommand
+        };
+
+        Assert.assertThrows(ExitException.class, () -> {
+            HugeGraphCommand.main(args);
+        }, (e) -> {
+            Assert.assertContains(String.format(
+                                  "Unexpected help sub-command %s",
+                                  badCommand), e.getMessage());
+        });
+    }
+
+    @Test
+    public void emptyCommandTest() {
+        String[] args = new String[]{
+                "--throw-mode", "true",
+                "--user", USER_NAME,
+                "--password", USER_PASSWORD
+        };
+
+        Assert.assertThrows(ExitException.class, () -> {
+            HugeGraphCommand.main(args);
+        }, (e) -> {
+            Assert.assertContains("No sub-Command found",
+                                  e.getMessage());
+        });
     }
 }

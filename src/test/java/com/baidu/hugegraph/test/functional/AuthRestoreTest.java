@@ -50,7 +50,7 @@ public class AuthRestoreTest extends AuthTest {
         ClientUtil clientUtil = new ClientUtil(URL, GRAPH, USER_NAME,
                                                USER_PASSWORD, TIME_OUT,
                                                TRUST_STORE_FILE, TRUST_STORE_PASSWORD);
-        this.client = clientUtil.hugeClient();
+        this.client = clientUtil.client();
     }
 
     @Test
@@ -62,7 +62,7 @@ public class AuthRestoreTest extends AuthTest {
         this.loadData(HugeType.ACCESS, "auth_accesses.txt");
 
         String[] args = new String[]{
-                "--test-mode", "true",
+                "--throw-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -128,7 +128,7 @@ public class AuthRestoreTest extends AuthTest {
         this.loadData(HugeType.USER, "auth_users.txt");
 
         String[] args = new String[]{
-                "--test-mode", "true",
+                "--throw-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -151,7 +151,7 @@ public class AuthRestoreTest extends AuthTest {
     @Test
     public void testAuthRestoreWithException() {
         String[] args = new String[]{
-                "--test-mode", "true",
+                "--throw-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -159,7 +159,7 @@ public class AuthRestoreTest extends AuthTest {
                 "--directory", DEFAULT_URL
         };
 
-        Assert.assertThrows(ParameterException.class, () -> {
+        Assert.assertThrows(IllegalArgumentException.class, () -> {
             HugeGraphCommand.main(args);
         }, (e) -> {
             String msg = e.getMessage();
@@ -173,7 +173,7 @@ public class AuthRestoreTest extends AuthTest {
         this.loadData(HugeType.USER, "auth_users_conflict.txt");
 
         String[] args = new String[]{
-                "--test-mode", "true",
+                "--throw-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -185,8 +185,8 @@ public class AuthRestoreTest extends AuthTest {
         Assert.assertThrows(IllegalArgumentException.class, () -> {
             HugeGraphCommand.main(args);
         }, (e) -> {
-            String msg = e.getMessage();
-            Assert.assertContains("Restore users conflict with STOP strategy", msg);
+            Assert.assertContains("Restore users conflict with STOP strategy",
+                                  e.getMessage());
         });
     }
 
@@ -195,7 +195,7 @@ public class AuthRestoreTest extends AuthTest {
         this.loadData(HugeType.USER, "auth_users_conflict.txt");
 
         String[] args = new String[]{
-                "--test-mode", "true",
+                "--throw-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -220,7 +220,7 @@ public class AuthRestoreTest extends AuthTest {
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{
-                "--test-mode", "true",
+                "--throw-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -233,8 +233,8 @@ public class AuthRestoreTest extends AuthTest {
         Assert.assertThrows(IllegalStateException.class, () -> {
             HugeGraphCommand.main(args);
         }, (e) -> {
-            String msg = e.getMessage();
-            Assert.assertContains("The directory does not exist", msg);
+            Assert.assertContains("The directory does not exist",
+                                  e.getMessage());
         });
     }
 
@@ -243,7 +243,7 @@ public class AuthRestoreTest extends AuthTest {
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{
-                "--test-mode", "true",
+                "--throw-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -256,9 +256,9 @@ public class AuthRestoreTest extends AuthTest {
         Assert.assertThrows(ParameterException.class, () -> {
             HugeGraphCommand.main(args);
         }, (e) -> {
-            String msg = e.getMessage();
             Assert.assertContains("valid value is 'all' or combination of " +
-                                  "[user,group,target,belong,access]", msg);
+                                  "[user,group,target,belong,access]",
+                                  e.getMessage());
         });
     }
 
@@ -267,7 +267,7 @@ public class AuthRestoreTest extends AuthTest {
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{
-                "--test-mode", "true",
+                "--throw-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -280,9 +280,9 @@ public class AuthRestoreTest extends AuthTest {
         Assert.assertThrows(IllegalArgumentException.class, () -> {
             HugeGraphCommand.main(args);
         }, (e) -> {
-            String msg = e.getMessage();
             Assert.assertContains("if type contains 'belong' then " +
-                                  "'user' and 'group' are required.", msg);
+                                  "'user' and 'group' are required.",
+                                  e.getMessage());
         });
     }
 
@@ -291,7 +291,7 @@ public class AuthRestoreTest extends AuthTest {
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{
-                "--test-mode", "true",
+                "--throw-mode", "true",
                 "--user", USER_NAME,
                 "--password", USER_PASSWORD,
                 "auth-restore",
@@ -304,15 +304,17 @@ public class AuthRestoreTest extends AuthTest {
         Assert.assertThrows(IllegalArgumentException.class, () -> {
             HugeGraphCommand.main(args);
         }, (e) -> {
-            String msg = e.getMessage();
             Assert.assertContains("if type contains 'access' then " +
-                                  "'group' and 'target' are required.", msg);
+                                  "'group' and 'target' are required.",
+                                  e.getMessage());
         });
     }
 
     private void loadData(HugeType hugeType, String dataFilePath) {
-        List<String> list = FileUtil.read(FileUtil.configPath(DEFAULT_TEST_URL +
-                                                              dataFilePath));
-        FileUtil.writeText(DEFAULT_URL + hugeType.string(), list);
+        String restoreDataPath = DEFAULT_URL + hugeType.string();
+        String testRestoreDataPath = DEFAULT_TEST_URL + dataFilePath;
+
+        List<String> list = FileUtil.read(FileUtil.configPath(testRestoreDataPath));
+        FileUtil.writeText(restoreDataPath, list);
     }
 }

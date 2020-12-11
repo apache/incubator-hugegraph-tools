@@ -88,7 +88,7 @@ public class HugeGraphCommand {
                                            new SubCommands.TrustStorePassword();
 
     @ParametersDelegate
-    private SubCommands.TestMode testMode = new SubCommands.TestMode();
+    private SubCommands.ThrowMode throwMode = new SubCommands.ThrowMode();
 
     public HugeGraphCommand() {
         this.subCommands = new SubCommands();
@@ -160,12 +160,12 @@ public class HugeGraphCommand {
         this.trustStorePassword.trustStorePassword = trustStorePassword;
     }
 
-    public boolean testMode() {
-        return this.testMode.testMode;
+    public boolean throwMode() {
+        return this.throwMode.throwMode;
     }
 
-    private void testMode(boolean testMode) {
-        this.testMode.testMode = testMode;
+    private void throwMode(boolean throwMode) {
+        this.throwMode.throwMode = throwMode;
     }
 
     public JCommander jCommander() {
@@ -450,24 +450,34 @@ public class HugeGraphCommand {
     public JCommander parseCommand(String[] args) {
         JCommander jCommander = this.jCommander();
         if (args.length == 0) {
-            throw new ExitException(ToolUtil.commandUsage(jCommander),
-                      "Command is null, print help command usage detail and exit");
+            throw ExitException.exception(ToolUtil.commandUsage(jCommander),
+                                          "No command found, please input" +
+                                          " command");
         }
-        this.parseCommandForHelp(args, jCommander);
-        jCommander.parse(args);
+        if (this.parseHelp(args, jCommander)) {
+            assert false;
+        } else {
+            jCommander.parse(args);
+        }
         String subCommand = jCommander.getParsedCommand();
         if (subCommand == null) {
-            throw new ExitException(ToolUtil.commandsCategoryDetails(jCommander),
-                      "Command is null, print command category and exit");
+            throw new ExitException(ToolUtil.commandsCategory(jCommander),
+                                    "No sub-Command found");
         }
         return jCommander;
     }
 
-    public void parseCommandForHelp(String[] args, JCommander jCommander) {
+    public boolean parseHelp(String[] args, JCommander jCommander) {
         String subCommand = Strings.EMPTY;
         List<String> list = Arrays.asList(args);
         if (!list.contains(Constants.COMMAND_HELP)) {
-            return;
+            return false;
+        }
+        //parse command for throw mode
+        if (list.contains(Constants.COMMAND_THROW_MODE)) {
+            int index = list.indexOf(Constants.COMMAND_THROW_MODE) + 1;
+            jCommander.parse(Constants.COMMAND_THROW_MODE,
+                             list.get(index));
         }
         int index = list.indexOf(Constants.COMMAND_HELP);
         if (list.size() > index + 1) {
@@ -475,16 +485,17 @@ public class HugeGraphCommand {
         }
         if (StringUtils.isEmpty(subCommand)) {
             throw new ExitException(ToolUtil.commandUsage(jCommander),
-                      "Print help command usage detail and exit");
+                                    "Command : hugegragh help");
         }
 
-        Map<String, JCommander> commanderMap = jCommander.getCommands();
-        if (commanderMap.containsKey(subCommand)) {
-            throw new ExitException(ToolUtil.commandUsage(commanderMap.get(subCommand)),
-                      "Print help sub-command usage detail and exit");
+        Map<String, JCommander> commands = jCommander.getCommands();
+        if (commands.containsKey(subCommand)) {
+            throw new ExitException(ToolUtil.commandUsage(commands.get(subCommand)),
+                                    String.format("Hugegragh help %s", subCommand));
         } else {
-            throw new ParameterException(String.format(
-                      "Unexpected help sub-command %s", subCommand));
+            throw ExitException.exception(ToolUtil.commandsCategory(jCommander),
+                                          String.format("Unexpected help " +
+                                          "sub-command %s", subCommand));
         }
     }
 
@@ -499,15 +510,21 @@ public class HugeGraphCommand {
 
     public static void main(String[] args) {
         HugeGraphCommand cmd = new HugeGraphCommand();
+        int exitCode = Constants.EXIT_CODE_NORMAL;
         try {
             cmd.execute(args);
         } catch (ExitException e) {
-            ToolUtil.exitWithUsageOrThrow(e, Constants.EXIT_CODE_ERROR,
-                                          cmd.testMode());
+            exitCode = e.exitCode();
+            ToolUtil.exitOrThrow(e, cmd.throwMode());
         } catch (Throwable e) {
-            ToolUtil.printException(e, cmd.testMode());
+            exitCode = Constants.EXIT_CODE_ERROR;
+            ToolUtil.printOrThrow(e, cmd.throwMode());
         } finally {
             cmd.shutdown();
+        }
+
+        if(exitCode == Constants.EXIT_CODE_ERROR) {
+            System.exit(exitCode);
         }
     }
 }

@@ -29,7 +29,7 @@ import com.beust.jcommander.JCommander;
 
 public final class ToolUtil {
 
-    public static void printException(Throwable e,
+    public static void printOrThrow(Throwable e,
                                       boolean testMode) {
         Printer.print("Failed to execute %s", e.getMessage());
         if (testMode) {
@@ -52,18 +52,18 @@ public final class ToolUtil {
         }
     }
 
-    public static void exitWithUsageOrThrow(ExitException e,
-                                            int code,
-                                            boolean testMode) {
-        if (testMode) {
+    public static void exitOrThrow(ExitException e, boolean throwMode) {
+        if (throwMode) {
             throw e;
-        } else {
-            Printer.print(e.details());
-            System.exit(code);
         }
+
+        if(e.exitCode() != Constants.EXIT_CODE_NORMAL) {
+            Printer.print(e.getMessage());
+        }
+        Printer.print(e.details());
     }
 
-    public static String commandsCategoryDetails(JCommander jCommander) {
+    public static String commandsCategory(JCommander jCommander) {
         StringBuffer sb = new StringBuffer();
         sb.append("================================================");
         sb.append("\n");
@@ -73,16 +73,16 @@ public final class ToolUtil {
         sb.append("\n");
         sb.append("Here are some sub-command :");
         sb.append("\n");
-        Map<String, JCommander> subCommandeMap = jCommander.getCommands();
-        for (String subCommand : subCommandeMap.keySet()) {
-            sb.append("||");
+        Map<String, JCommander> subCommandes = jCommander.getCommands();
+        for (String subCommand : subCommandes.keySet()) {
+            sb.append("|");
             sb.append(subCommand);
             sb.append("\n");
         }
         sb.append("================================================");
         sb.append("\n");
-        sb.append("Can use 'hugegraph help' to get detail help info " +
-                  "of all sub-commands or 'hugegraph help sub-command' " +
+        sb.append("Please use 'hugegraph help' to get detail help info " +
+                  "of all sub-commands or 'hugegraph help {sub-command}' " +
                   "to get detail help info of one sub-command");
         sb.append("\n");
         sb.append("================================================");

@@ -30,7 +30,7 @@ public class ClientUtil {
     private Integer timeout;
     private String trustStoreFile;
     private String trustStorePassword;
-    protected HugeClient hugeClient;
+    private HugeClient hugeClient;
 
     public ClientUtil(String url, String graph, String username,
                       String password, Integer timeout,
@@ -42,18 +42,18 @@ public class ClientUtil {
         this.timeout = timeout;
         this.trustStoreFile = trustStoreFile;
         this.trustStorePassword = trustStorePassword;
-        this.client();
+        this.hugeClient();
     }
 
-    protected void client() {
+    protected void hugeClient() {
         this.hugeClient = HugeClient.builder(this.url, this.graph)
                                     .configUser(this.username, this.password)
                                     .configTimeout(this.timeout)
-                                    .configSSL(trustStoreFile, trustStorePassword)
+                                    .configSSL(this.trustStoreFile, this.trustStorePassword)
                                     .build();
     }
 
-    public HugeClient hugeClient() {
+    public HugeClient client() {
         return this.hugeClient;
     }
 }
