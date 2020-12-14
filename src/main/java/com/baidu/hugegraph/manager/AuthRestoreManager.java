@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
@@ -68,6 +69,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
     private Map<String, Target> targetsByName;
     private Map<String, Belong> belongsByName;
     private Map<String, Access> accessesByName;
+    private List<AuthRestore> authRestores;
 
     public AuthRestoreManager(ToolClient.ConnectionInfo info) {
         super(info, AUTH_RESTORE_DIR);
@@ -85,13 +87,14 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         this.targetsByName = Maps.newHashMap();
         this.belongsByName = Maps.newHashMap();
         this.accessesByName = Maps.newHashMap();
+        this.authRestores = Lists.newArrayList();
     }
 
     public void authRestore(List<HugeType> types) {
         List<HugeType> sortedHugeTypes = this.sortListByCode(types);
         try {
-            this.doAuthCheckConflict(sortedHugeTypes);
-            this.doAuthRestore(sortedHugeTypes);
+            this.doAddAuths(sortedHugeTypes);
+            this.doAuthRestore();
         } catch (Throwable e) {
             throw e;
         } finally {
@@ -99,23 +102,23 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    private void doAuthCheckConflict(List<HugeType> types) {
+    private void doAddAuths(List<HugeType> types) {
         for (HugeType type : types) {
             switch (type) {
                 case USER:
-                    this.checkUsersConflict();
+                    this.authRestores.add(new AuthUser());
                     break;
                 case GROUP:
-                    this.checkGroupsConflict();
+                    this.authRestores.add(new AuthGroup());
                     break;
                 case TARGET:
-                    this.checkTargetsConflict();
+                    this.authRestores.add(new AuthTarget());
                     break;
                 case BELONG:
-                    this.checkBelongsConflict();
+                    this.authRestores.add(new AuthBelong());
                     break;
                 case ACCESS:
-                    this.checkAccessesConflict();
+                    this.authRestores.add(new AuthAccess());
                     break;
                 default:
                     throw new AssertionError(String.format(
@@ -124,286 +127,15 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    private void doAuthRestore(List<HugeType> types) {
-        for (HugeType type : types) {
-            switch (type) {
-                case USER:
-                    this.restoreUsers();
-                    break;
-                case GROUP:
-                    this.restoreGroups();
-                    break;
-                case TARGET:
-                    this.restoreTargets();
-                    break;
-                case BELONG:
-                    this.restoreBelongs();
-                    break;
-                case ACCESS:
-                    this.restoreAccesses();
-                    break;
-                default:
-                    throw new AssertionError(String.format(
-                              "Bad auth restore type: %s", type));
+    private void doAuthRestore() {
+        if (CollectionUtils.isNotEmpty(this.authRestores)) {
+            for (AuthRestore authRestore : this.authRestores) {
+                authRestore.checkConflict();
+            }
+            for (AuthRestore authRestore : this.authRestores) {
+                authRestore.restore();
             }
         }
-    }
-
-    protected void checkUsersConflict() {
-        List<User> users = retry(this.client.authManager()::listUsers,
-                                 "Querying users of authority");
-        Map<String, User> userMap = Maps.newHashMap();
-        for (User user : users) {
-             userMap.put(user.name(), user);
-        }
-        List<String> userJsons = this.read(HugeType.USER);
-        for (String user : userJsons) {
-            int conflict = conflict_status;
-            User restoreUser = JsonUtil.fromJson(user, User.class);
-            if (!userMap.containsKey(restoreUser.name())) {
-                this.prepareUserForRestore(restoreUser);
-                continue;
-            }
-            User existUser = userMap.get(restoreUser.name());
-            if (!StringUtils.equals(existUser.phone(),
-                                    restoreUser.phone())) {
-                conflict++;
-            }
-            if (!StringUtils.equals(existUser.email(),
-                                    restoreUser.email())) {
-                conflict++;
-            }
-            if (!StringUtils.equals(existUser.avatar(),
-                                    restoreUser.avatar())) {
-                conflict++;
-            }
-            if (conflict > conflict_status) {
-                E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                "Restore users conflict with STOP strategy, " +
-                                "user name is s%", restoreUser.name());
-                E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
-                                this.strategy == AuthRestoreStrategy.IGNORE,
-                                "Restore users strategy is not found");
-            } else {
-                this.idsMap.put(restoreUser.id().toString(),
-                                existUser.id().toString());
-            }
-        }
-    }
-
-    protected void checkGroupsConflict() {
-        List<Group> groups = retry(this.client.authManager()::listGroups,
-                                   "Querying users of authority");
-        Map<String, Group> groupMap = Maps.newHashMap();
-        for (Group group : groups) {
-             groupMap.put(group.name(), group);
-        }
-        List<String> groupJsons = this.read(HugeType.GROUP);
-        for (String group : groupJsons) {
-            int conflict = conflict_status;
-            Group restoreGroup = JsonUtil.fromJson(group, Group.class);
-            if (!groupMap.containsKey(restoreGroup.name())) {
-                this.prepareGroupForRestore(restoreGroup);
-                continue;
-            }
-            Group existGroup = groupMap.get(restoreGroup.name());
-            if (!StringUtils.equals(existGroup.description(),
-                                    restoreGroup.description())) {
-                conflict++;
-            }
-            if (conflict > conflict_status) {
-                E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                "Restore groups conflict with STOP strategy, " +
-                                "group name is s%", restoreGroup.name());
-                E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
-                                this.strategy == AuthRestoreStrategy.IGNORE,
-                                "Restore groups strategy is not found");
-            } else {
-                this.idsMap.put(restoreGroup.id().toString(),
-                                existGroup.id().toString());
-            }
-        }
-    }
-
-    protected void checkTargetsConflict() {
-        List<Target> targets = retry(this.client.authManager()::listTargets,
-                                     "Querying targets of authority");
-        Map<String, Target> targetMap = Maps.newHashMap();
-        for (Target target : targets) {
-             targetMap.put(target.name(), target);
-        }
-        List<String> targetJsons = this.read(HugeType.TARGET);
-        for (String target : targetJsons) {
-            int conflict = conflict_status;
-            Target restoreTarget = JsonUtil.fromJson(target, Target.class);
-            if (!targetMap.containsKey(restoreTarget.name())) {
-                this.prepareTargetForRestore(restoreTarget);
-                continue;
-            }
-            Target existTarget = targetMap.get(restoreTarget.name());
-            if (!StringUtils.equals(existTarget.graph(),
-                                    restoreTarget.graph())) {
-                conflict++;
-            }
-            if (!StringUtils.equals(existTarget.url(),
-                                    restoreTarget.url())) {
-                conflict++;
-            }
-            if (conflict > conflict_status) {
-                E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                "Restore targets conflict with STOP strategy, " +
-                                "target name is s%", restoreTarget.name());
-                E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
-                                this.strategy == AuthRestoreStrategy.IGNORE,
-                                "Restore targets strategy is not found");
-            } else {
-                this.idsMap.put(restoreTarget.id().toString(),
-                                existTarget.id().toString());
-            }
-        }
-    }
-
-    protected void checkBelongsConflict() {
-        List<Belong> belongs = retry(this.client.authManager()::listBelongs,
-                                     "Querying belongs of authority");
-        Map<String, Belong>  belongMap = Maps.newHashMap();
-        for (Belong belong : belongs) {
-             belongMap.put(belong.user() + ":" + belong.group(),
-                           belong);
-        }
-        List<String> belongJsons = this.read(HugeType.BELONG);
-        for (String belong : belongJsons) {
-            Belong restoreBelong = JsonUtil.fromJson(belong, Belong.class);
-            if (!checkAllExistInIdMaps(restoreBelong.user().toString(),
-                restoreBelong.group().toString())) {
-                continue;
-            }
-            String ids = this.idsMap.get(restoreBelong.user()) + ":" +
-                         this.idsMap.get(restoreBelong.group());
-            if (belongMap.containsKey(ids)) {
-                E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                "Restore belongs conflict with STOP strategy, " +
-                                "belong id is s%", restoreBelong.id());
-                E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
-                                this.strategy == AuthRestoreStrategy.IGNORE,
-                                "Restore belongs strategy is not found");
-                continue;
-            }
-            this.belongsByName.put(restoreBelong.id().toString(), restoreBelong);
-        }
-    }
-
-    protected void checkAccessesConflict() {
-        List<Access> accesses = retry(this.client.authManager()::listAccesses,
-                                      "Querying accesses of authority");
-        Map<String, Access>  accessMap = Maps.newHashMap();
-        for (Access access : accesses) {
-             accessMap.put(access.group() + ":" + access.target(),
-                           access);
-        }
-        List<String> accessJsons = this.read(HugeType.ACCESS);
-        for (String access : accessJsons) {
-            Access restoreAccess = JsonUtil.fromJson(access, Access.class);
-            if (!checkAllExistInIdMaps(restoreAccess.group().toString(),
-                restoreAccess.target().toString())) {
-                continue;
-            }
-            String ids = this.idsMap.get(restoreAccess.group()) + ":" +
-                         this.idsMap.get(restoreAccess.target());
-            if (accessMap.containsKey(ids)) {
-                E.checkArgument(this.strategy != AuthRestoreStrategy.STOP,
-                                "Restore accesses conflict with STOP strategy," +
-                                "accesses id is s%", restoreAccess.id());
-                E.checkArgument(this.strategy == AuthRestoreStrategy.STOP ||
-                                this.strategy == AuthRestoreStrategy.IGNORE,
-                                "Restore accesses strategy is not found");
-                continue;
-            }
-            this.accessesByName.put(restoreAccess.id().toString(), restoreAccess);
-        }
-    }
-
-    protected void restoreAccesses() {
-        int count = 0;
-        for (Map.Entry<String, Access> entry : this.accessesByName.entrySet()) {
-             Access restoreAccess = entry.getValue();
-             restoreAccess.target(this.idsMap.get(restoreAccess.target().toString()));
-             restoreAccess.group(this.idsMap.get(restoreAccess.group().toString()));
-             retry(() -> {
-                     return this.client.authManager().createAccess(restoreAccess);
-                     }, "Restore access of authority");
-             count++;
-            }
-        Printer.print("Restore accesses finished, count is %d !", count);
-    }
-
-    protected void restoreBelongs() {
-        int count = 0;
-        for (Map.Entry<String, Belong> entry : this.belongsByName.entrySet()) {
-             Belong restoreBelong = entry.getValue();
-             restoreBelong.user(this.idsMap.get(restoreBelong.user().toString()));
-             restoreBelong.group(this.idsMap.get(restoreBelong.group().toString()));
-             retry(() -> {
-                     return this.client.authManager().createBelong(restoreBelong);
-                     }, "Restore belongs of authority");
-             count++;
-            }
-        Printer.print("Restore belongs finished, count is %d !", count);
-    }
-
-    protected void restoreTargets() {
-        int count = 0;
-        for (Map.Entry<String, Target> entry : this.targetsByName.entrySet()) {
-             Target restoreTarget = entry.getValue();
-             Target target = retry(() -> {
-                                     return this.client.authManager().createTarget(restoreTarget);
-                                     }, "Restore targets of authority");
-             this.idsMap.put(restoreTarget.id().toString(), target.id().toString());
-             count++;
-           }
-        Printer.print("Restore targets finished, count is %d !", count);
-    }
-
-    protected void restoreGroups() {
-        int count = 0;
-        for (Map.Entry<String, Group> entry : this.groupsByName.entrySet()) {
-             Group restoreGroup = entry.getValue();
-             Group group = retry(() -> {
-                                   return this.client.authManager().createGroup(restoreGroup);
-                                   }, "Restore groups of authority");
-             this.idsMap.put(restoreGroup.id().toString(), group.id().toString());
-             count++;
-        }
-        Printer.print("Restore groups finished, count is %d !", count);
-    }
-
-    protected void restoreUsers() {
-        int count = 0;
-        for (Map.Entry<String, User> entry : this.usersByName.entrySet()) {
-             User restoreUser = entry.getValue();
-             restoreUser.password(this.initPassword);
-             User user = retry(() -> {
-                                 return this.client.authManager().createUser(restoreUser);
-                                 }, "Restore users of authority");
-             this.idsMap.put(restoreUser.id().toString(), user.id().toString());
-             count++;
-            }
-        Printer.print("Restore users finished, count is %d !", count);
-    }
-
-    protected void prepareTargetForRestore(Target restoreTarget) {
-        this.idsMap.put(restoreTarget.id().toString(), restoreTarget.id().toString());
-        this.targetsByName.put(restoreTarget.name(), restoreTarget);
-    }
-
-    protected void prepareGroupForRestore(Group restoreGroup) {
-        this.idsMap.put(restoreGroup.id().toString(), restoreGroup.id().toString());
-        this.groupsByName.put(restoreGroup.name(), restoreGroup);
-    }
-
-    protected void prepareUserForRestore(User restoreUser) {
-        this.idsMap.put(restoreUser.id().toString(), restoreUser.id().toString());
-        this.usersByName.put(restoreUser.name(), restoreUser);
     }
 
     private boolean checkAllExistInIdMaps(String oneId, String otherId) {
@@ -453,6 +185,295 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                       "The following option is required: [--init-password]"));
         } else {
             this.initPassword = password;
+        }
+    }
+
+    private abstract class AuthRestore {
+
+        public abstract void checkConflict();
+
+        public abstract void restore();
+    }
+
+    private class AuthUser extends AuthRestore{
+
+        @Override
+        public void checkConflict() {
+            List<User> users = retry(client.authManager()::listUsers,
+                                     "Querying users of authority");
+            Map<String, User> userMap = Maps.newHashMap();
+            for (User user : users) {
+                 userMap.put(user.name(), user);
+            }
+            List<String> userJsons = read(HugeType.USER);
+            for (String user : userJsons) {
+                int conflict = conflict_status;
+                User restoreUser = JsonUtil.fromJson(user, User.class);
+                if (!userMap.containsKey(restoreUser.name())) {
+                    this.prepareUserForRestore(restoreUser);
+                    continue;
+                }
+                User existUser = userMap.get(restoreUser.name());
+                if (!StringUtils.equals(existUser.phone(),
+                                        restoreUser.phone())) {
+                    conflict++;
+                }
+                if (!StringUtils.equals(existUser.email(),
+                                        restoreUser.email())) {
+                    conflict++;
+                }
+                if (!StringUtils.equals(existUser.avatar(),
+                                        restoreUser.avatar())) {
+                    conflict++;
+                }
+                if (conflict > conflict_status) {
+                    E.checkArgument(strategy != AuthRestoreStrategy.STOP,
+                                    "Restore users conflict with STOP strategy, " +
+                                    "user name is s%", restoreUser.name());
+                    E.checkArgument(strategy == AuthRestoreStrategy.STOP ||
+                                    strategy == AuthRestoreStrategy.IGNORE,
+                                    "Restore users strategy is not found");
+                } else {
+                    idsMap.put(restoreUser.id().toString(),
+                               existUser.id().toString());
+                }
+            }
+        }
+
+        @Override
+        public void restore() {
+            int count = 0;
+            for (Map.Entry<String, User> entry : usersByName.entrySet()) {
+                User restoreUser = entry.getValue();
+                restoreUser.password(initPassword);
+                User user = retry(() -> {
+                                    return client.authManager().createUser(restoreUser);
+                                    }, "Restore users of authority");
+                idsMap.put(restoreUser.id().toString(), user.id().toString());
+                count++;
+            }
+            Printer.print("Restore users finished, count is %d !", count);
+        }
+
+        private void prepareUserForRestore(User restoreUser) {
+            idsMap.put(restoreUser.id().toString(), restoreUser.id().toString());
+            usersByName.put(restoreUser.name(), restoreUser);
+        }
+    }
+
+    private class AuthGroup extends AuthRestore {
+
+        @Override
+        public void checkConflict() {
+            List<Group> groups = retry(client.authManager()::listGroups,
+                                       "Querying users of authority");
+            Map<String, Group> groupMap = Maps.newHashMap();
+            for (Group group : groups) {
+                 groupMap.put(group.name(), group);
+            }
+            List<String> groupJsons = read(HugeType.GROUP);
+            for (String group : groupJsons) {
+                int conflict = conflict_status;
+                Group restoreGroup = JsonUtil.fromJson(group, Group.class);
+                if (!groupMap.containsKey(restoreGroup.name())) {
+                    this.prepareGroupForRestore(restoreGroup);
+                    continue;
+                }
+                Group existGroup = groupMap.get(restoreGroup.name());
+                if (!StringUtils.equals(existGroup.description(),
+                                        restoreGroup.description())) {
+                    conflict++;
+                }
+                if (conflict > conflict_status) {
+                    E.checkArgument(strategy != AuthRestoreStrategy.STOP,
+                                    "Restore groups conflict with STOP strategy, " +
+                                    "group name is s%", restoreGroup.name());
+                    E.checkArgument(strategy == AuthRestoreStrategy.STOP ||
+                                    strategy == AuthRestoreStrategy.IGNORE,
+                                    "Restore groups strategy is not found");
+                } else {
+                    idsMap.put(restoreGroup.id().toString(),
+                               existGroup.id().toString());
+                }
+            }
+        }
+
+        @Override
+        public void restore() {
+            int count = 0;
+            for (Map.Entry<String, Group> entry : groupsByName.entrySet()) {
+                Group restoreGroup = entry.getValue();
+                Group group = retry(() -> {
+                                      return client.authManager().createGroup(restoreGroup);
+                                      }, "Restore groups of authority");
+                idsMap.put(restoreGroup.id().toString(), group.id().toString());
+                count++;
+            }
+            Printer.print("Restore groups finished, count is %d !", count);
+        }
+
+        protected void prepareGroupForRestore(Group restoreGroup) {
+            idsMap.put(restoreGroup.id().toString(), restoreGroup.id().toString());
+            groupsByName.put(restoreGroup.name(), restoreGroup);
+        }
+    }
+
+    private class AuthTarget extends AuthRestore {
+
+        @Override
+        public void checkConflict() {
+            List<Target> targets = retry(client.authManager()::listTargets,
+                                         "Querying targets of authority");
+            Map<String, Target> targetMap = Maps.newHashMap();
+            for (Target target : targets) {
+                 targetMap.put(target.name(), target);
+            }
+            List<String> targetJsons = read(HugeType.TARGET);
+            for (String target : targetJsons) {
+                int conflict = conflict_status;
+                Target restoreTarget = JsonUtil.fromJson(target, Target.class);
+                if (!targetMap.containsKey(restoreTarget.name())) {
+                    this.prepareTargetForRestore(restoreTarget);
+                    continue;
+                }
+                Target existTarget = targetMap.get(restoreTarget.name());
+                if (!StringUtils.equals(existTarget.graph(),
+                                        restoreTarget.graph())) {
+                    conflict++;
+                }
+                if (!StringUtils.equals(existTarget.url(),
+                                        restoreTarget.url())) {
+                    conflict++;
+                }
+                if (conflict > conflict_status) {
+                    E.checkArgument(strategy != AuthRestoreStrategy.STOP,
+                                    "Restore targets conflict with STOP strategy, " +
+                                    "target name is s%", restoreTarget.name());
+                    E.checkArgument(strategy == AuthRestoreStrategy.STOP ||
+                                    strategy == AuthRestoreStrategy.IGNORE,
+                                    "Restore targets strategy is not found");
+                } else {
+                    idsMap.put(restoreTarget.id().toString(),
+                               existTarget.id().toString());
+                }
+            }
+        }
+
+        @Override
+        public void restore() {
+            int count = 0;
+            for (Map.Entry<String, Target> entry : targetsByName.entrySet()) {
+                Target restoreTarget = entry.getValue();
+                Target target = retry(() -> {
+                                        return client.authManager().createTarget(restoreTarget);
+                                        }, "Restore targets of authority");
+                idsMap.put(restoreTarget.id().toString(), target.id().toString());
+                count++;
+            }
+            Printer.print("Restore targets finished, count is %d !", count);
+        }
+
+        protected void prepareTargetForRestore(Target restoreTarget) {
+            idsMap.put(restoreTarget.id().toString(), restoreTarget.id().toString());
+            targetsByName.put(restoreTarget.name(), restoreTarget);
+        }
+    }
+
+    private class AuthBelong extends AuthRestore {
+
+        @Override
+        public void checkConflict() {
+            List<Belong> belongs = retry(client.authManager()::listBelongs,
+                                         "Querying belongs of authority");
+            Map<String, Belong>  belongMap = Maps.newHashMap();
+            for (Belong belong : belongs) {
+                 belongMap.put(belong.user() + ":" + belong.group(),
+                               belong);
+            }
+            List<String> belongJsons = read(HugeType.BELONG);
+            for (String belong : belongJsons) {
+                Belong restoreBelong = JsonUtil.fromJson(belong, Belong.class);
+                if (!checkAllExistInIdMaps(restoreBelong.user().toString(),
+                                           restoreBelong.group().toString())) {
+                    continue;
+                }
+                String ids = idsMap.get(restoreBelong.user()) + ":" +
+                             idsMap.get(restoreBelong.group());
+                if (belongMap.containsKey(ids)) {
+                    E.checkArgument(strategy != AuthRestoreStrategy.STOP,
+                                    "Restore belongs conflict with STOP strategy, " +
+                                    "belong id is s%", restoreBelong.id());
+                    E.checkArgument(strategy == AuthRestoreStrategy.STOP ||
+                                    strategy == AuthRestoreStrategy.IGNORE,
+                                    "Restore belongs strategy is not found");
+                    continue;
+                }
+                belongsByName.put(restoreBelong.id().toString(), restoreBelong);
+            }
+        }
+
+        @Override
+        public void restore() {
+            int count = 0;
+            for (Map.Entry<String, Belong> entry : belongsByName.entrySet()) {
+                Belong restoreBelong = entry.getValue();
+                restoreBelong.user(idsMap.get(restoreBelong.user().toString()));
+                restoreBelong.group(idsMap.get(restoreBelong.group().toString()));
+                retry(() -> {
+                        return client.authManager().createBelong(restoreBelong);
+                        }, "Restore belongs of authority");
+                count++;
+            }
+            Printer.print("Restore belongs finished, count is %d !", count);
+        }
+    }
+
+    private class AuthAccess extends AuthRestore {
+
+        @Override
+        public void checkConflict() {
+            List<Access> accesses = retry(client.authManager()::listAccesses,
+                                          "Querying accesses of authority");
+            Map<String, Access>  accessMap = Maps.newHashMap();
+            for (Access access : accesses) {
+                 accessMap.put(access.group() + ":" + access.target(),
+                               access);
+            }
+            List<String> accessJsons = read(HugeType.ACCESS);
+            for (String access : accessJsons) {
+                Access restoreAccess = JsonUtil.fromJson(access, Access.class);
+                if (!checkAllExistInIdMaps(restoreAccess.group().toString(),
+                                           restoreAccess.target().toString())) {
+                    continue;
+                }
+                String ids = idsMap.get(restoreAccess.group()) + ":" +
+                             idsMap.get(restoreAccess.target());
+                if (accessMap.containsKey(ids)) {
+                    E.checkArgument(strategy != AuthRestoreStrategy.STOP,
+                                    "Restore accesses conflict with STOP strategy," +
+                                    "accesses id is s%", restoreAccess.id());
+                    E.checkArgument(strategy == AuthRestoreStrategy.STOP ||
+                                    strategy == AuthRestoreStrategy.IGNORE,
+                                    "Restore accesses strategy is not found");
+                    continue;
+                }
+                accessesByName.put(restoreAccess.id().toString(), restoreAccess);
+            }
+        }
+
+        @Override
+        public void restore() {
+            int count = 0;
+            for (Map.Entry<String, Access> entry : accessesByName.entrySet()) {
+                Access restoreAccess = entry.getValue();
+                restoreAccess.target(idsMap.get(restoreAccess.target().toString()));
+                restoreAccess.group(idsMap.get(restoreAccess.group().toString()));
+                retry(() -> {
+                        return client.authManager().createAccess(restoreAccess);
+                        }, "Restore access of authority");
+                count++;
+            }
+            Printer.print("Restore accesses finished, count is %d !", count);
         }
     }
 }

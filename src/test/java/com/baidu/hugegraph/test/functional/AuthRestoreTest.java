@@ -317,4 +317,28 @@ public class AuthRestoreTest extends AuthTest {
         List<String> list = FileUtil.read(FileUtil.configPath(testRestoreDataPath));
         FileUtil.writeText(restoreDataPath, list);
     }
+
+    @Test
+    public void testAuthRestoreByStrategyWithException() {
+        String filePath = "./auth-test-test";
+
+        String[] args = new String[]{
+                "--throw-mode", "true",
+                "--user", USER_NAME,
+                "--password", USER_PASSWORD,
+                "auth-restore",
+                "--types", "user",
+                "--strategy", "test",
+                "--init-password", "123456",
+                "--directory", filePath
+        };
+
+        Assert.assertThrows(IllegalArgumentException.class, () -> {
+            HugeGraphCommand.main(args);
+        }, (e) -> {
+            Assert.assertContains("Invalid --strategy 'test', valid " +
+                                  "value is 'stop' or 'ignore",
+                                  e.getMessage());
+        });
+    }
 }
