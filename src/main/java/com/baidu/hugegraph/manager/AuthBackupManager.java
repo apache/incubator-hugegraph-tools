@@ -63,7 +63,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
         }
     }
 
-    public void doAuthBackup(List<HugeType> types) {
+    private void doAuthBackup(List<HugeType> types) {
         for (HugeType type : types) {
             switch (type) {
                 case USER:
@@ -88,7 +88,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
         }
     }
 
-    protected void backupUsers() {
+    private void backupUsers() {
         Printer.print("Users backup started...");
         List<User> users = retry(this.client.authManager()::listUsers,
                                  "querying users of authority");
@@ -96,7 +96,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
         Printer.print("Users backup finished, write lines: %d", writeLines);
     }
 
-    protected void backupGroups() {
+    private void backupGroups() {
         Printer.print("Groups backup started...");
         List<Group> groups = retry(this.client.authManager()::listGroups,
                                    "querying groups of authority");
@@ -104,7 +104,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
         Printer.print("Groups backup finished, write lines: %d", writeLines);
     }
 
-    protected void backupTargets() {
+    private void backupTargets() {
         Printer.print("Targets backup started...");
         List<Target> targets = retry(this.client.authManager()::listTargets,
                                      "querying targets of authority");
@@ -112,7 +112,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
         Printer.print("Targets backup finished, write lines: %d", writeLines);
     }
 
-    protected void backupBelongs() {
+    private void backupBelongs() {
         Printer.print("Belongs backup started...");
         List<Belong> belongs = retry(this.client.authManager()::listBelongs,
                                      "querying belongs of authority");
@@ -120,7 +120,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
         Printer.print("Belongs backup finished, write lines: %d", writeLines);
     }
 
-    protected void backupAccesses() {
+    private void backupAccesses() {
         Printer.print("Accesses backup started...");
         List<Access> accesses = retry(this.client.authManager()::listAccesses,
                                       "querying accesses of authority");
@@ -128,7 +128,7 @@ public class AuthBackupManager extends BackupRestoreBaseManager {
         Printer.print("Accesses backup finished, write lines: %d", writeLines);
     }
 
-    protected long writeText(HugeType type, List<?> list) {
+    private long writeText(HugeType type, List<?> list) {
         long count = 0L;
         try {
             OutputStream os = this.outputStream(type.string(), false);

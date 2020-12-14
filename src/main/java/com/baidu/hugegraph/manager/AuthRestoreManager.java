@@ -146,7 +146,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         return false;
     }
 
-    protected List<String> read(HugeType type) {
+    private List<String> read(HugeType type) {
         List<String> resultList = Lists.newArrayList();
         InputStream is = this.inputStream(type.string());
         try (InputStreamReader isr = new InputStreamReader(is, API.CHARSET);
@@ -173,13 +173,13 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    public List<HugeType> sortListByCode(List<HugeType> hugeTypes) {
+    private List<HugeType> sortListByCode(List<HugeType> hugeTypes) {
         return hugeTypes.stream().
                sorted(Comparator.comparing(HugeType::code)).
                collect(Collectors.toList());
     }
 
-    public void initPassword(List<HugeType> types, String password) {
+    private void initPassword(List<HugeType> types, String password) {
         if (types.contains(HugeType.USER) && Strings.isEmpty(password)) {
             throw new IllegalArgumentException(String.format(
                       "The following option is required: [--init-password]"));
@@ -312,7 +312,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
             Printer.print("Restore groups finished, count is %d !", count);
         }
 
-        protected void prepareGroupForRestore(Group restoreGroup) {
+        private void prepareGroupForRestore(Group restoreGroup) {
             idsMap.put(restoreGroup.id().toString(), restoreGroup.id().toString());
             groupsByName.put(restoreGroup.name(), restoreGroup);
         }
@@ -373,7 +373,7 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
             Printer.print("Restore targets finished, count is %d !", count);
         }
 
-        protected void prepareTargetForRestore(Target restoreTarget) {
+        private void prepareTargetForRestore(Target restoreTarget) {
             idsMap.put(restoreTarget.id().toString(), restoreTarget.id().toString());
             targetsByName.put(restoreTarget.name(), restoreTarget);
         }

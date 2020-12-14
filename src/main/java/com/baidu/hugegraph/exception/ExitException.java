@@ -32,6 +32,13 @@ public class ExitException extends RuntimeException {
         this.exitCode = Constants.EXIT_CODE_NORMAL;
     }
 
+    public ExitException(String details, String reason,
+                         Object... args) {
+        super(String.format(reason, args));
+        this.details = details;
+        this.exitCode = Constants.EXIT_CODE_NORMAL;
+    }
+
     public ExitException(Integer exitCode, String details,
                          String reason) {
         super(reason);
@@ -69,8 +76,15 @@ public class ExitException extends RuntimeException {
         return this.exitCode;
     }
 
-    public static ExitException exception(String details, String reason) {
+    public static ExitException exception(String details, String reason,
+                                          Object... args) {
         return new ExitException(Constants.EXIT_CODE_ERROR,
-                                 details, reason);
+                                 details, reason, args);
+    }
+
+    public static ExitException normal(String details, String reason,
+                                       Object... args) {
+        return new ExitException(Constants.EXIT_CODE_NORMAL,
+                                 details, reason, args);
     }
 }

@@ -34,7 +34,6 @@ import com.baidu.hugegraph.structure.auth.Group;
 import com.baidu.hugegraph.structure.auth.Target;
 import com.baidu.hugegraph.structure.auth.User;
 import com.baidu.hugegraph.structure.constant.HugeType;
-import com.baidu.hugegraph.test.util.ClientUtil;
 import com.baidu.hugegraph.test.util.FileUtil;
 import com.baidu.hugegraph.testutil.Assert;
 import com.beust.jcommander.ParameterException;
@@ -47,14 +46,15 @@ public class AuthRestoreTest extends AuthTest {
 
     @Before
     public void init() {
-        ClientUtil clientUtil = new ClientUtil(URL, GRAPH, USER_NAME,
-                                               USER_PASSWORD, TIME_OUT,
-                                               TRUST_STORE_FILE, TRUST_STORE_PASSWORD);
-        this.client = clientUtil.client();
+        client = HugeClient.builder(URL, GRAPH)
+                           .configUser(USER_NAME, USER_PASSWORD)
+                           .configTimeout(TIME_OUT)
+                           .configSSL(TRUST_STORE_FILE, TRUST_STORE_PASSWORD)
+                           .build();
     }
 
     @Test
-    public void testAuthRestoreByAll() {
+    public void testAuthRestoreForAllType() {
         this.loadData(HugeType.USER, "auth_users.txt");
         this.loadData(HugeType.TARGET, "auth_targets.txt");
         this.loadData(HugeType.GROUP, "auth_groups.txt");
@@ -124,7 +124,7 @@ public class AuthRestoreTest extends AuthTest {
     }
 
     @Test
-    public void testAuthRestoreByUser() {
+    public void testAuthRestoreForUser() {
         this.loadData(HugeType.USER, "auth_users.txt");
 
         String[] args = new String[]{
@@ -149,7 +149,7 @@ public class AuthRestoreTest extends AuthTest {
     }
 
     @Test
-    public void testAuthRestoreWithException() {
+    public void testRestoreWithInitPasswordException() {
         String[] args = new String[]{
                 "--throw-mode", "true",
                 "--user", USER_NAME,
@@ -161,7 +161,7 @@ public class AuthRestoreTest extends AuthTest {
 
         Assert.assertThrows(IllegalArgumentException.class, () -> {
             HugeGraphCommand.main(args);
-        }, (e) -> {
+        }, e -> {
             String msg = e.getMessage();
             Assert.assertTrue(msg.endsWith("The following option is " +
                                            "required: [--init-password]"));
@@ -169,7 +169,7 @@ public class AuthRestoreTest extends AuthTest {
     }
 
     @Test
-    public void testAuthRestoreByStrategyConflict() {
+    public void testAuthRestoreWithStrategyException() {
         this.loadData(HugeType.USER, "auth_users_conflict.txt");
 
         String[] args = new String[]{
@@ -184,14 +184,14 @@ public class AuthRestoreTest extends AuthTest {
 
         Assert.assertThrows(IllegalArgumentException.class, () -> {
             HugeGraphCommand.main(args);
-        }, (e) -> {
+        }, e -> {
             Assert.assertContains("Restore users conflict with STOP strategy",
                                   e.getMessage());
         });
     }
 
     @Test
-    public void testAuthRestoreByStrategyIgnore() {
+    public void testAuthRestoreWithStrategyIgnore() {
         this.loadData(HugeType.USER, "auth_users_conflict.txt");
 
         String[] args = new String[]{
@@ -212,11 +212,11 @@ public class AuthRestoreTest extends AuthTest {
              userMap.put(user1.name(), user1);
         }
 
-        Assert.assertTrue(userMap.containsKey("test_user1"));
+        Assert.assertTrue(userMap.containsKey("admin"));
     }
 
     @Test
-    public void testAuthRestoreByDirectoryException() {
+    public void testAuthRestoreWithDirectoryException() {
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{
@@ -232,14 +232,14 @@ public class AuthRestoreTest extends AuthTest {
 
         Assert.assertThrows(IllegalStateException.class, () -> {
             HugeGraphCommand.main(args);
-        }, (e) -> {
+        }, e -> {
             Assert.assertContains("The directory does not exist",
                                   e.getMessage());
         });
     }
 
     @Test
-    public void testAuthRestoreByTypesWithException() {
+    public void testAuthRestoreWithTypesException() {
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{
@@ -255,7 +255,7 @@ public class AuthRestoreTest extends AuthTest {
 
         Assert.assertThrows(ParameterException.class, () -> {
             HugeGraphCommand.main(args);
-        }, (e) -> {
+        }, e -> {
             Assert.assertContains("valid value is 'all' or combination of " +
                                   "[user,group,target,belong,access]",
                                   e.getMessage());
@@ -279,7 +279,7 @@ public class AuthRestoreTest extends AuthTest {
 
         Assert.assertThrows(IllegalArgumentException.class, () -> {
             HugeGraphCommand.main(args);
-        }, (e) -> {
+        }, e -> {
             Assert.assertContains("if type contains 'belong' then " +
                                   "'user' and 'group' are required.",
                                   e.getMessage());
@@ -303,23 +303,15 @@ public class AuthRestoreTest extends AuthTest {
 
         Assert.assertThrows(IllegalArgumentException.class, () -> {
             HugeGraphCommand.main(args);
-        }, (e) -> {
+        }, e -> {
             Assert.assertContains("if type contains 'access' then " +
                                   "'group' and 'target' are required.",
                                   e.getMessage());
         });
     }
 
-    private void loadData(HugeType hugeType, String dataFilePath) {
-        String restoreDataPath = DEFAULT_URL + hugeType.string();
-        String testRestoreDataPath = DEFAULT_TEST_URL + dataFilePath;
-
-        List<String> list = FileUtil.read(FileUtil.configPath(testRestoreDataPath));
-        FileUtil.writeText(restoreDataPath, list);
-    }
-
     @Test
-    public void testAuthRestoreByStrategyWithException() {
+    public void testAuthRestoreWithBadStrategyException() {
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{
@@ -335,10 +327,18 @@ public class AuthRestoreTest extends AuthTest {
 
         Assert.assertThrows(IllegalArgumentException.class, () -> {
             HugeGraphCommand.main(args);
-        }, (e) -> {
+        }, e -> {
             Assert.assertContains("Invalid --strategy 'test', valid " +
                                   "value is 'stop' or 'ignore",
                                   e.getMessage());
         });
+    }
+
+    private void loadData(HugeType hugeType, String dataFilePath) {
+        String restoreDataPath = DEFAULT_URL + hugeType.string();
+        String testRestoreDataPath = DEFAULT_TEST_URL + dataFilePath;
+
+        List<String> list = FileUtil.read(FileUtil.configPath(testRestoreDataPath));
+        FileUtil.writeText(restoreDataPath, list);
     }
 }

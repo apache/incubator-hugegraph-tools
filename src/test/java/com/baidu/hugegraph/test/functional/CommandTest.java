@@ -28,7 +28,7 @@ import com.baidu.hugegraph.testutil.Assert;
 public class CommandTest extends AuthTest {
 
     @Test
-    public void helpCommandTest() {
+    public void testHelpCommand() {
         String[] args = new String[]{
                 "--throw-mode", "true",
                 "--user", USER_NAME,
@@ -38,14 +38,14 @@ public class CommandTest extends AuthTest {
 
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
-        }, (e) -> {
+        }, e -> {
             Assert.assertContains("Command : hugegragh help",
                                   e.getMessage());
         });
     }
 
     @Test
-    public void helpSubCommandTest() {
+    public void testHelpSubCommand() {
         String[] args = new String[]{
                 "--throw-mode", "true",
                 "--user", USER_NAME,
@@ -55,14 +55,14 @@ public class CommandTest extends AuthTest {
 
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
-        }, (e) -> {
+        }, e -> {
             Assert.assertContains("Hugegragh help auth-backup",
                                   e.getMessage());
         });
     }
 
     @Test
-    public void badHelpSubCommandTest() {
+    public void testBadHelpSubCommandException() {
         String badCommand = "asd";
         String[] args = new String[]{
                 "--throw-mode", "true",
@@ -73,7 +73,7 @@ public class CommandTest extends AuthTest {
 
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
-        }, (e) -> {
+        }, e -> {
             Assert.assertContains(String.format(
                                   "Unexpected help sub-command %s",
                                   badCommand), e.getMessage());
@@ -81,7 +81,7 @@ public class CommandTest extends AuthTest {
     }
 
     @Test
-    public void emptyCommandTest() {
+    public void testEmptyCommandException() {
         String[] args = new String[]{
                 "--throw-mode", "true",
                 "--user", USER_NAME,
@@ -90,7 +90,7 @@ public class CommandTest extends AuthTest {
 
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
-        }, (e) -> {
+        }, e -> {
             Assert.assertContains("No sub-Command found",
                                   e.getMessage());
         });

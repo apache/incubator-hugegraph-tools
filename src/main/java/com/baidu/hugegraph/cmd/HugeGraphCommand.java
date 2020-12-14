@@ -461,8 +461,9 @@ public class HugeGraphCommand {
         }
         String subCommand = jCommander.getParsedCommand();
         if (subCommand == null) {
-            throw new ExitException(ToolUtil.commandsCategory(jCommander),
-                                    "No sub-Command found");
+            throw ExitException.normal(ToolUtil.commandsCategory(
+                                       jCommander),
+                                       "No sub-Command found");
         }
         return jCommander;
     }
@@ -473,7 +474,7 @@ public class HugeGraphCommand {
         if (!list.contains(Constants.COMMAND_HELP)) {
             return false;
         }
-        //parse command for throw mode
+        //Parse the '--throw-mode' command
         if (list.contains(Constants.COMMAND_THROW_MODE)) {
             int index = list.indexOf(Constants.COMMAND_THROW_MODE) + 1;
             jCommander.parse(Constants.COMMAND_THROW_MODE,
@@ -484,18 +485,19 @@ public class HugeGraphCommand {
             subCommand = list.get(index + 1);
         }
         if (StringUtils.isEmpty(subCommand)) {
-            throw new ExitException(ToolUtil.commandUsage(jCommander),
-                                    "Command : hugegragh help");
+            throw ExitException.normal(ToolUtil.commandUsage(jCommander),
+                                       "Command : hugegragh help");
         }
 
         Map<String, JCommander> commands = jCommander.getCommands();
         if (commands.containsKey(subCommand)) {
-            throw new ExitException(ToolUtil.commandUsage(commands.get(subCommand)),
-                                    String.format("Hugegragh help %s", subCommand));
+            throw ExitException.normal(ToolUtil.commandUsage(
+                                       commands.get(subCommand)),
+                                       "Hugegragh help %s", subCommand);
         } else {
             throw ExitException.exception(ToolUtil.commandsCategory(jCommander),
-                                          String.format("Unexpected help " +
-                                          "sub-command %s", subCommand));
+                                          "Unexpected help sub-command " +
+                                          "%s", subCommand);
         }
     }
 
@@ -523,7 +525,7 @@ public class HugeGraphCommand {
             cmd.shutdown();
         }
 
-        if(exitCode == Constants.EXIT_CODE_ERROR) {
+        if (exitCode != Constants.EXIT_CODE_NORMAL) {
             System.exit(exitCode);
         }
     }

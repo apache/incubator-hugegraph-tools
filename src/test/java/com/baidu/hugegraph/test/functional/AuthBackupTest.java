@@ -70,7 +70,7 @@ public class AuthBackupTest extends AuthTest {
     }
 
     @Test
-    public void testAuthBackupByTypesWithException() {
+    public void testAuthBackupWithTypesException() {
         String[] args = new String[]{
                 "--throw-mode", "true",
                 "--user", USER_NAME,
@@ -81,7 +81,7 @@ public class AuthBackupTest extends AuthTest {
 
         Assert.assertThrows(ParameterException.class, () -> {
             HugeGraphCommand.main(args);
-        }, (e) -> {
+        }, e -> {
             Assert.assertContains("valid value is 'all' or combination of " +
                                   "[user,group,target,belong,access]",
                                   e.getMessage());
