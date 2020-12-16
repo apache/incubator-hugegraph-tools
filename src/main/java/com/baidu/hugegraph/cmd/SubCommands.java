@@ -700,8 +700,8 @@ public class SubCommands {
         @Parameter(names = {"--huge-types", "-t"},
                    listConverter = HugeTypeListConverter.class,
                    description = "Type of schema/data. Concat with ',' if more " +
-                                 "than one. other types include 'all' and 'schema'" +
-                                 " .'all' means all vertices, edges and schema, in " +
+                                 "than one. other types include 'all' and 'schema'." +
+                                 " 'all' means all vertices, edges and " + "schema, in " +
                                  "other words, 'all' equals with 'vertex, edge, " +
                                  "vertex_label, edge_label, property_key, index_label'." +
                                  " 'schema' equals with 'vertex_label, edge_label, " +

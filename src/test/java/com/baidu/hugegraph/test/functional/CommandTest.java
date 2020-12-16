@@ -56,7 +56,7 @@ public class CommandTest extends AuthTest {
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
-            Assert.assertContains("Hugegragh help auth-backup",
+            Assert.assertContains("Command : hugegragh help auth-backup",
                                   e.getMessage());
         });
     }
@@ -91,7 +91,7 @@ public class CommandTest extends AuthTest {
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
-            Assert.assertContains("No sub-Command found",
+            Assert.assertContains("No sub-command found",
                                   e.getMessage());
         });
     }

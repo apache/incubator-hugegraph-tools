@@ -463,7 +463,7 @@ public class HugeGraphCommand {
         if (subCommand == null) {
             throw ExitException.normal(ToolUtil.commandsCategory(
                                        jCommander),
-                                       "No sub-Command found");
+                                       "No sub-command found");
         }
         return jCommander;
     }
@@ -474,7 +474,7 @@ public class HugeGraphCommand {
         if (!list.contains(Constants.COMMAND_HELP)) {
             return false;
         }
-        //Parse the '--throw-mode' command
+        // Parse the '--throw-mode' command
         if (list.contains(Constants.COMMAND_THROW_MODE)) {
             int index = list.indexOf(Constants.COMMAND_THROW_MODE) + 1;
             jCommander.parse(Constants.COMMAND_THROW_MODE,
@@ -493,7 +493,8 @@ public class HugeGraphCommand {
         if (commands.containsKey(subCommand)) {
             throw ExitException.normal(ToolUtil.commandUsage(
                                        commands.get(subCommand)),
-                                       "Hugegragh help %s", subCommand);
+                                       "Command : hugegragh help %s",
+                                       subCommand);
         } else {
             throw ExitException.exception(ToolUtil.commandsCategory(jCommander),
                                           "Unexpected help sub-command " +
