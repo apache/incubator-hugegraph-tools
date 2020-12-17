@@ -263,7 +263,7 @@ public class AuthRestoreTest extends AuthTest {
     }
 
     @Test
-    public void testAuthRestoreByTypesWithBelongException() {
+    public void testAuthRestoreByBelongWithoutDependency() {
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{
@@ -287,7 +287,7 @@ public class AuthRestoreTest extends AuthTest {
     }
 
     @Test
-    public void testAuthRestoreByTypesWithAccessException() {
+    public void testAuthRestoreByAccessWithoutDependency() {
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{

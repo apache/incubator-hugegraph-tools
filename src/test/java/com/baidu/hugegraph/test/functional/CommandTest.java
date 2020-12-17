@@ -39,8 +39,11 @@ public class CommandTest extends AuthTest {
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
+            ExitException exception = (ExitException)e;
             Assert.assertContains("Command : hugegragh help",
-                                  e.getMessage());
+                                  exception.getMessage());
+            Assert.assertContains("Usage: hugegraph [options] [command]",
+                                  exception.details());
         });
     }
 
@@ -56,8 +59,11 @@ public class CommandTest extends AuthTest {
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
+            ExitException exception = (ExitException)e;
             Assert.assertContains("Command : hugegragh help auth-backup",
-                                  e.getMessage());
+                                  exception.getMessage());
+            Assert.assertContains("Usage: auth-backup [options]",
+                                  exception.details());
         });
     }
 
@@ -74,9 +80,12 @@ public class CommandTest extends AuthTest {
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
+            ExitException exception = (ExitException)e;
             Assert.assertContains(String.format(
                                   "Unexpected help sub-command %s",
-                                  badCommand), e.getMessage());
+                                  badCommand), exception.getMessage());
+            Assert.assertContains("Here are some sub-command ",
+                                  exception.details());
         });
     }
 
@@ -91,8 +100,11 @@ public class CommandTest extends AuthTest {
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
+            ExitException exception = (ExitException)e;
             Assert.assertContains("No sub-command found",
-                                  e.getMessage());
+                                  exception.getMessage());
+            Assert.assertContains("Warning : must provide one sub-command",
+                                  exception.details());
         });
     }
 }

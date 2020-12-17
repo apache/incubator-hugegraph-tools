@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
@@ -55,9 +54,8 @@ import com.google.common.collect.Maps;
 
 public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
 
-    private static final String AUTH_BACKUP_NAME = "auth-backup";
-    private static final String AUTH_RESTORE_DIR = "auth-restore";
-    private static final int conflict_status = 0;
+    private static final String AUTH_BACKUP_RESTORE = "auth-backup-restore";
+    private static final int NO_CONFLICT = 0;
 
     private AuthRestoreStrategy strategy;
     private String initPassword;
@@ -74,13 +72,14 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
     private List<AuthManager> authManagers;
 
     public AuthBackupRestoreManager(ToolClient.ConnectionInfo info) {
-        super(info, AUTH_RESTORE_DIR);
+        super(info, AUTH_BACKUP_RESTORE);
     }
 
     public void init(SubCommands.AuthBackup authBackup) {
         this.retry(authBackup.retry());
         this.directory(authBackup.directory(), authBackup.hdfsConf());
         this.ensureDirectoryExist(true);
+        this.authManagers = Lists.newArrayList();
     }
 
     public void init(SubCommands.AuthRestore authRestore) {
@@ -100,7 +99,8 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
 
     public void backup(List<HugeType> types) {
         try {
-            this.doBackup(types);
+            this.doAddAuths(types);
+            this.doBackup();
         } catch (Throwable e) {
             throw e;
         } finally {
@@ -108,28 +108,9 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    private void doBackup(List<HugeType> types) {
-        for (HugeType type : types) {
-            switch (type) {
-                case USER:
-                    new UserManager().backup();
-                    break;
-                case GROUP:
-                    new GroupManager().backup();
-                    break;
-                case TARGET:
-                    new TargetManager().backup();
-                    break;
-                case BELONG:
-                    new BelongManager().backup();
-                    break;
-                case ACCESS:
-                    new AccessManager().backup();
-                    break;
-                default:
-                    throw new AssertionError(String.format(
-                              "Bad auth backup type: %s", type));
-            }
+    private void doBackup() {
+        for (AuthManager authManager : this.authManagers) {
+            authManager.backup();
         }
     }
 
@@ -142,6 +123,15 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
             throw e;
         } finally {
             this.shutdown(this.type());
+        }
+    }
+
+    private void doRestore() {
+        for (AuthManager authManager : this.authManagers) {
+            authManager.checkConflict();
+        }
+        for (AuthManager authManager : this.authManagers) {
+            authManager.restore();
         }
     }
 
@@ -166,17 +156,6 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 default:
                     throw new AssertionError(String.format(
                               "Bad auth restore type: %s", type));
-            }
-        }
-    }
-
-    private void doRestore() {
-        if (CollectionUtils.isNotEmpty(this.authManagers)) {
-            for (AuthManager authManager : this.authManagers) {
-                authManager.checkConflict();
-            }
-            for (AuthManager authManager : this.authManagers) {
-                authManager.restore();
             }
         }
     }
@@ -228,10 +207,10 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
     protected void directory(String dir, Map<String, String> hdfsConf) {
         if (hdfsConf == null || hdfsConf.isEmpty()) {
             // Local FS directory
-            super.directory = LocalDirectory.constructDir(dir, AUTH_BACKUP_NAME);
+            super.directory = LocalDirectory.constructDir(dir, AUTH_BACKUP_RESTORE);
         } else {
             // HDFS directory
-            super.directory = HdfsDirectory.constructDir(dir, AUTH_BACKUP_NAME,
+            super.directory = HdfsDirectory.constructDir(dir, AUTH_BACKUP_RESTORE,
                                                          hdfsConf);
         }
     }
@@ -282,7 +261,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
             }
             List<String> userJsons = read(HugeType.USER);
             for (String user : userJsons) {
-                int conflict = conflict_status;
+                int conflict = NO_CONFLICT;
                 User restoreUser = JsonUtil.fromJson(user, User.class);
                 if (!userMap.containsKey(restoreUser.name())) {
                     this.prepareUserForRestore(restoreUser);
@@ -301,7 +280,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                                         restoreUser.avatar())) {
                     conflict++;
                 }
-                if (conflict > conflict_status) {
+                if (conflict > NO_CONFLICT) {
                     E.checkArgument(strategy != AuthRestoreStrategy.STOP,
                                     "Restore users conflict with STOP strategy, " +
                                     "user name is s%", restoreUser.name());
@@ -358,7 +337,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
             }
             List<String> groupJsons = read(HugeType.GROUP);
             for (String group : groupJsons) {
-                int conflict = conflict_status;
+                int conflict = NO_CONFLICT;
                 Group restoreGroup = JsonUtil.fromJson(group, Group.class);
                 if (!groupMap.containsKey(restoreGroup.name())) {
                     this.prepareGroupForRestore(restoreGroup);
@@ -369,7 +348,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                                         restoreGroup.description())) {
                     conflict++;
                 }
-                if (conflict > conflict_status) {
+                if (conflict > NO_CONFLICT) {
                     E.checkArgument(strategy != AuthRestoreStrategy.STOP,
                                     "Restore groups conflict with STOP strategy, " +
                                     "group name is s%", restoreGroup.name());
@@ -425,7 +404,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
             }
             List<String> targetJsons = read(HugeType.TARGET);
             for (String target : targetJsons) {
-                int conflict = conflict_status;
+                int conflict = NO_CONFLICT;
                 Target restoreTarget = JsonUtil.fromJson(target, Target.class);
                 if (!targetMap.containsKey(restoreTarget.name())) {
                     this.prepareTargetForRestore(restoreTarget);
@@ -440,7 +419,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                                         restoreTarget.url())) {
                     conflict++;
                 }
-                if (conflict > conflict_status) {
+                if (conflict > NO_CONFLICT) {
                     E.checkArgument(strategy != AuthRestoreStrategy.STOP,
                                     "Restore targets conflict with STOP strategy, " +
                                     "target name is s%", restoreTarget.name());

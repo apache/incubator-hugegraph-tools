@@ -29,10 +29,9 @@ import com.beust.jcommander.JCommander;
 
 public final class ToolUtil {
 
-    public static void printOrThrow(Throwable e,
-                                      boolean testMode) {
+    public static void printOrThrow(Throwable e, boolean throwMode) {
         Printer.print("Failed to execute %s", e.getMessage());
-        if (testMode) {
+        if (throwMode) {
             if (e instanceof RuntimeException) {
                 throw  (RuntimeException) e;
             }

@@ -830,9 +830,10 @@ public class SubCommands {
     public static class AuthBackupRestore {
 
         @Parameter(names = {"--directory"}, arity = 1,
-                   description = "Directory of auth information, default is " +
-                                 "'./{auth-backup}' in local file system " +
-                                 "or '{fs.default.name}/{auth-backup}' in HDFS")
+                   description = "Directory of auth information, default " +
+                                 "is './{auth-backup-restore}' in local " +
+                                 "file system or '{fs.default.name}/" +
+                                 "{auth-backup-restore}' in HDFS")
         public String directory;
 
         @DynamicParameter(names = "-D",

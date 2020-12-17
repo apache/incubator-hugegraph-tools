@@ -21,7 +21,7 @@ package com.baidu.hugegraph.test.functional;
 
 public class AuthTest {
 
-    public static final String DEFAULT_URL = "./auth-backup/";
+    public static final String DEFAULT_URL = "./auth-backup-restore/";
     public static final String DEFAULT_TEST_URL = "/auth/";
     public static final String USER_NAME = "admin";
     public static final String USER_PASSWORD = "123456";
