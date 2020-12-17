@@ -20,9 +20,11 @@
 package com.baidu.hugegraph.manager;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +53,7 @@ import com.baidu.hugegraph.util.JsonUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class AuthRestoreManager extends BackupRestoreBaseManager {
+public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
 
     private static final String AUTH_BACKUP_NAME = "auth-backup";
     private static final String AUTH_RESTORE_DIR = "auth-restore";
@@ -69,10 +71,16 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
     private Map<String, Target> targetsByName;
     private Map<String, Belong> belongsByName;
     private Map<String, Access> accessesByName;
-    private List<AuthRestore> authRestores;
+    private List<AuthManager> authManagers;
 
-    public AuthRestoreManager(ToolClient.ConnectionInfo info) {
+    public AuthBackupRestoreManager(ToolClient.ConnectionInfo info) {
         super(info, AUTH_RESTORE_DIR);
+    }
+
+    public void init(SubCommands.AuthBackup authBackup) {
+        this.retry(authBackup.retry());
+        this.directory(authBackup.directory(), authBackup.hdfsConf());
+        this.ensureDirectoryExist(true);
     }
 
     public void init(SubCommands.AuthRestore authRestore) {
@@ -87,14 +95,49 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         this.targetsByName = Maps.newHashMap();
         this.belongsByName = Maps.newHashMap();
         this.accessesByName = Maps.newHashMap();
-        this.authRestores = Lists.newArrayList();
+        this.authManagers = Lists.newArrayList();
     }
 
-    public void authRestore(List<HugeType> types) {
+    public void backup(List<HugeType> types) {
+        try {
+            this.doBackup(types);
+        } catch (Throwable e) {
+            throw e;
+        } finally {
+            this.shutdown(this.type());
+        }
+    }
+
+    private void doBackup(List<HugeType> types) {
+        for (HugeType type : types) {
+            switch (type) {
+                case USER:
+                    new UserManager().backup();
+                    break;
+                case GROUP:
+                    new GroupManager().backup();
+                    break;
+                case TARGET:
+                    new TargetManager().backup();
+                    break;
+                case BELONG:
+                    new BelongManager().backup();
+                    break;
+                case ACCESS:
+                    new AccessManager().backup();
+                    break;
+                default:
+                    throw new AssertionError(String.format(
+                              "Bad auth backup type: %s", type));
+            }
+        }
+    }
+
+    public void restore(List<HugeType> types) {
         List<HugeType> sortedHugeTypes = this.sortListByCode(types);
         try {
             this.doAddAuths(sortedHugeTypes);
-            this.doAuthRestore();
+            this.doRestore();
         } catch (Throwable e) {
             throw e;
         } finally {
@@ -106,19 +149,19 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         for (HugeType type : types) {
             switch (type) {
                 case USER:
-                    this.authRestores.add(new AuthUser());
+                    this.authManagers.add(new UserManager());
                     break;
                 case GROUP:
-                    this.authRestores.add(new AuthGroup());
+                    this.authManagers.add(new GroupManager());
                     break;
                 case TARGET:
-                    this.authRestores.add(new AuthTarget());
+                    this.authManagers.add(new TargetManager());
                     break;
                 case BELONG:
-                    this.authRestores.add(new AuthBelong());
+                    this.authManagers.add(new BelongManager());
                     break;
                 case ACCESS:
-                    this.authRestores.add(new AuthAccess());
+                    this.authManagers.add(new AccessManager());
                     break;
                 default:
                     throw new AssertionError(String.format(
@@ -127,13 +170,13 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    private void doAuthRestore() {
-        if (CollectionUtils.isNotEmpty(this.authRestores)) {
-            for (AuthRestore authRestore : this.authRestores) {
-                authRestore.checkConflict();
+    private void doRestore() {
+        if (CollectionUtils.isNotEmpty(this.authManagers)) {
+            for (AuthManager authManager : this.authManagers) {
+                authManager.checkConflict();
             }
-            for (AuthRestore authRestore : this.authRestores) {
-                authRestore.restore();
+            for (AuthManager authManager : this.authManagers) {
+                authManager.restore();
             }
         }
     }
@@ -162,6 +205,26 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         return resultList;
     }
 
+    private long writeText(HugeType type, List<?> list) {
+        long count = 0L;
+        try {
+            OutputStream os = this.outputStream(type.string(), false);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(LBUF_SIZE);
+            StringBuilder builder = new StringBuilder(LBUF_SIZE);
+
+            for (Object e : list) {
+                count++;
+                builder.append(JsonUtil.toJson(e)).append("\n");
+            }
+            baos.write(builder.toString().getBytes(API.CHARSET));
+            os.write(baos.toByteArray());
+        } catch (Throwable e) {
+            throw new ToolsException("Failed to serialize %s to %s",
+                                     e, list, type.string());
+        }
+        return count;
+    }
+
     protected void directory(String dir, Map<String, String> hdfsConf) {
         if (hdfsConf == null || hdfsConf.isEmpty()) {
             // Local FS directory
@@ -188,14 +251,26 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    private abstract class AuthRestore {
+    private interface AuthManager {
 
-        public abstract void checkConflict();
+        void backup();
 
-        public abstract void restore();
+        void checkConflict();
+
+        void restore();
     }
 
-    private class AuthUser extends AuthRestore{
+    private class UserManager implements AuthManager {
+
+        @Override
+        public void backup() {
+            Printer.print("Users backup started...");
+            List<User> users = retry(client.authManager()::listUsers,
+                                     "querying users of authority");
+            long writeLines = writeText(HugeType.USER, users);
+            Printer.print("Users backup finished, write lines: %d",
+                          writeLines);
+        }
 
         @Override
         public void checkConflict() {
@@ -261,7 +336,17 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    private class AuthGroup extends AuthRestore {
+    private class GroupManager implements AuthManager {
+
+        @Override
+        public void backup() {
+            Printer.print("Groups backup started...");
+            List<Group> groups = retry(client.authManager()::listGroups,
+                                       "querying groups of authority");
+            long writeLines = writeText(HugeType.GROUP, groups);
+            Printer.print("Groups backup finished, write lines: %d",
+                          writeLines);
+        }
 
         @Override
         public void checkConflict() {
@@ -318,7 +403,17 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    private class AuthTarget extends AuthRestore {
+    private class TargetManager implements AuthManager {
+
+        @Override
+        public void backup() {
+            Printer.print("Targets backup started...");
+            List<Target> targets = retry(client.authManager()::listTargets,
+                                         "querying targets of authority");
+            long writeLines = writeText(HugeType.TARGET, targets);
+            Printer.print("Targets backup finished, write lines: %d",
+                          writeLines);
+        }
 
         @Override
         public void checkConflict() {
@@ -379,7 +474,17 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    private class AuthBelong extends AuthRestore {
+    private class BelongManager implements AuthManager {
+
+        @Override
+        public void backup() {
+            Printer.print("Belongs backup started...");
+            List<Belong> belongs = retry(client.authManager()::listBelongs,
+                                         "querying belongs of authority");
+            long writeLines = writeText(HugeType.BELONG, belongs);
+            Printer.print("Belongs backup finished, write lines: %d",
+                          writeLines);
+        }
 
         @Override
         public void checkConflict() {
@@ -428,7 +533,17 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
         }
     }
 
-    private class AuthAccess extends AuthRestore {
+    private class AccessManager implements AuthManager {
+
+        @Override
+        public void backup() {
+            Printer.print("Accesses backup started...");
+            List<Access> accesses = retry(client.authManager()::listAccesses,
+                                          "querying accesses of authority");
+            long writeLines = writeText(HugeType.ACCESS, accesses);
+            Printer.print("Accesses backup finished, write lines: %d",
+                          writeLines);
+        }
 
         @Override
         public void checkConflict() {
@@ -473,7 +588,8 @@ public class AuthRestoreManager extends BackupRestoreBaseManager {
                         }, "Restore access of authority");
                 count++;
             }
-            Printer.print("Restore accesses finished, count is %d !", count);
+            Printer.print("Restore accesses finished, count is %d !",
+                          count);
         }
     }
 }

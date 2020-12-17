@@ -35,8 +35,7 @@ import com.baidu.hugegraph.base.ToolClient.ConnectionInfo;
 import com.baidu.hugegraph.base.ToolManager;
 import com.baidu.hugegraph.constant.Constants;
 import com.baidu.hugegraph.exception.ExitException;
-import com.baidu.hugegraph.manager.AuthBackupManager;
-import com.baidu.hugegraph.manager.AuthRestoreManager;
+import com.baidu.hugegraph.manager.AuthBackupRestoreManager;
 import com.baidu.hugegraph.manager.BackupManager;
 import com.baidu.hugegraph.manager.DumpGraphManager;
 import com.baidu.hugegraph.manager.GraphsManager;
@@ -356,18 +355,18 @@ public class HugeGraphCommand {
             case "auth-backup":
                 Printer.print("Auth backup start...");
                 SubCommands.AuthBackup authBackup = this.subCommand(subCmd);
-                AuthBackupManager authBackupManager = manager(AuthBackupManager.class);
+                AuthBackupRestoreManager authBackupManager = manager(AuthBackupRestoreManager.class);
 
                 authBackupManager.init(authBackup);
-                authBackupManager.authBackup(authBackup.types());
+                authBackupManager.backup(authBackup.types());
                 break;
             case "auth-restore":
                 Printer.print("Auth restore start...");
                 SubCommands.AuthRestore authRestore = this.subCommand(subCmd);
-                AuthRestoreManager authRestoreManager = manager(AuthRestoreManager.class);
+                AuthBackupRestoreManager authRestoreManager = manager(AuthBackupRestoreManager.class);
 
                 authRestoreManager.init(authRestore);
-                authRestoreManager.authRestore(authRestore.types());
+                authRestoreManager.restore(authRestore.types());
                 break;
             default:
                 throw new ParameterException(String.format(
