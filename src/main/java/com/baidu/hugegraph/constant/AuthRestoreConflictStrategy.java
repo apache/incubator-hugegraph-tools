@@ -19,7 +19,7 @@
 
 package com.baidu.hugegraph.constant;
 
-public enum AuthRestoreStrategy {
+public enum AuthRestoreConflictStrategy {
 
     STOP(1, "stop"),
     IGNORE(2, "ignore");
@@ -27,7 +27,7 @@ public enum AuthRestoreStrategy {
     private int code;
     private String name = null;
 
-    AuthRestoreStrategy(int code, String name) {
+    AuthRestoreConflictStrategy(int code, String name) {
         assert code < 256;
         this.code = code;
         this.name = name;
@@ -37,9 +37,9 @@ public enum AuthRestoreStrategy {
         return this.code;
     }
 
-    public static AuthRestoreStrategy fromName(String name) {
-        AuthRestoreStrategy[] restoreStrategys = AuthRestoreStrategy.values();
-        for (AuthRestoreStrategy strategy : restoreStrategys) {
+    public static AuthRestoreConflictStrategy fromName(String name) {
+        AuthRestoreConflictStrategy[] restoreStrategys = AuthRestoreConflictStrategy.values();
+        for (AuthRestoreConflictStrategy strategy : restoreStrategys) {
             if (strategy.string().equals(name)) {
                 return strategy;
             }

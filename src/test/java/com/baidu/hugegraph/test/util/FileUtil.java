@@ -53,7 +53,7 @@ public class FileUtil {
         return false;
     }
 
-    public static List<String> getFileDirectoryNames(String filePath) {
+    public static List<String> getFileSubdirectories(String filePath) {
         File file = new File(filePath);
         if (!file.exists()) {
             return ListUtils.EMPTY_LIST;
@@ -79,7 +79,7 @@ public class FileUtil {
         }
     }
 
-    public static long writeText(String filePath, List<?> list) {
+    public static long writeTestRestoreData(String filePath, List<?> list) {
         long count = 0L;
         try (FileOutputStream os = new FileOutputStream(filePath);
              ByteArrayOutputStream baos = new ByteArrayOutputStream(LBUF_SIZE)) {
@@ -98,7 +98,7 @@ public class FileUtil {
         return count;
     }
 
-    public static List<String> read(String filePath) {
+    public static List<String> readTestRestoreData(String filePath) {
         List<String> resultList = Lists.newArrayList();
         try (InputStream is = new FileInputStream(filePath);
              InputStreamReader isr = new InputStreamReader(is, API.CHARSET)) {

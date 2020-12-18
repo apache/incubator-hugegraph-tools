@@ -32,7 +32,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.baidu.hugegraph.api.API;
-import com.baidu.hugegraph.constant.AuthRestoreStrategy;
+import com.baidu.hugegraph.constant.AuthRestoreConflictStrategy;
 import com.baidu.hugegraph.manager.TasksManager;
 import com.baidu.hugegraph.structure.constant.GraphMode;
 import com.baidu.hugegraph.structure.constant.HugeType;
@@ -1043,8 +1043,8 @@ public class SubCommands {
         public String convert(String value) {
             E.checkArgument(value != null && !value.isEmpty(),
                             "Strategy can't be null or empty");
-            E.checkArgument(AuthRestoreStrategy.STOP.string().equals(value) ||
-                            AuthRestoreStrategy.IGNORE.string().equals(value),
+            E.checkArgument(AuthRestoreConflictStrategy.STOP.string().equals(value) ||
+                            AuthRestoreConflictStrategy.IGNORE.string().equals(value),
                             "Invalid --strategy '%s', valid value is" +
                             " 'stop' or 'ignore", value);
             return value;

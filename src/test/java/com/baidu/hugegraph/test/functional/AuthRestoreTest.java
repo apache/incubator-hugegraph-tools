@@ -149,7 +149,7 @@ public class AuthRestoreTest extends AuthTest {
     }
 
     @Test
-    public void testRestoreWithInitPasswordException() {
+    public void testRestoreWithoutInitPassword() {
         String[] args = new String[]{
                 "--throw-mode", "true",
                 "--user", USER_NAME,
@@ -169,7 +169,7 @@ public class AuthRestoreTest extends AuthTest {
     }
 
     @Test
-    public void testAuthRestoreWithStrategyException() {
+    public void testAuthRestoreWithStopStrategy() {
         this.loadData(HugeType.USER, "auth_users_conflict.txt");
 
         String[] args = new String[]{
@@ -185,13 +185,13 @@ public class AuthRestoreTest extends AuthTest {
         Assert.assertThrows(IllegalArgumentException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
-            Assert.assertContains("Restore users conflict with STOP strategy",
+            Assert.assertContains("Restore conflict with STOP strategy",
                                   e.getMessage());
         });
     }
 
     @Test
-    public void testAuthRestoreWithStrategyIgnore() {
+    public void testAuthRestoreWithIgnoreStrategy() {
         this.loadData(HugeType.USER, "auth_users_conflict.txt");
 
         String[] args = new String[]{
@@ -216,7 +216,7 @@ public class AuthRestoreTest extends AuthTest {
     }
 
     @Test
-    public void testAuthRestoreWithDirectoryException() {
+    public void testAuthRestoreWithWrongDirectory() {
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{
@@ -239,7 +239,7 @@ public class AuthRestoreTest extends AuthTest {
     }
 
     @Test
-    public void testAuthRestoreWithTypesException() {
+    public void testAuthRestoreWithWrongType() {
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{
@@ -311,7 +311,7 @@ public class AuthRestoreTest extends AuthTest {
     }
 
     @Test
-    public void testAuthRestoreWithBadStrategyException() {
+    public void testAuthRestoreWithWrongStrategy() {
         String filePath = "./auth-test-test";
 
         String[] args = new String[]{
@@ -338,7 +338,8 @@ public class AuthRestoreTest extends AuthTest {
         String restoreDataPath = DEFAULT_URL + hugeType.string();
         String testRestoreDataPath = DEFAULT_TEST_URL + dataFilePath;
 
-        List<String> list = FileUtil.read(FileUtil.configPath(testRestoreDataPath));
-        FileUtil.writeText(restoreDataPath, list);
+        List<String> list = FileUtil.readTestRestoreData(FileUtil.configPath(
+                                                         testRestoreDataPath));
+        FileUtil.writeTestRestoreData(restoreDataPath, list);
     }
 }

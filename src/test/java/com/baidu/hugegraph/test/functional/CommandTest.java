@@ -39,7 +39,7 @@ public class CommandTest extends AuthTest {
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
-            ExitException exception = (ExitException)e;
+            ExitException exception = (ExitException) e;
             Assert.assertContains("Command : hugegragh help",
                                   exception.getMessage());
             Assert.assertContains("Usage: hugegraph [options] [command]",
@@ -59,7 +59,7 @@ public class CommandTest extends AuthTest {
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
-            ExitException exception = (ExitException)e;
+            ExitException exception = (ExitException) e;
             Assert.assertContains("Command : hugegragh help auth-backup",
                                   exception.getMessage());
             Assert.assertContains("Usage: auth-backup [options]",
@@ -80,7 +80,7 @@ public class CommandTest extends AuthTest {
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
-            ExitException exception = (ExitException)e;
+            ExitException exception = (ExitException) e;
             Assert.assertContains(String.format(
                                   "Unexpected help sub-command %s",
                                   badCommand), exception.getMessage());
@@ -100,7 +100,7 @@ public class CommandTest extends AuthTest {
         Assert.assertThrows(ExitException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
-            ExitException exception = (ExitException)e;
+            ExitException exception = (ExitException) e;
             Assert.assertContains("No sub-command found",
                                   exception.getMessage());
             Assert.assertContains("Warning : must provide one sub-command",
