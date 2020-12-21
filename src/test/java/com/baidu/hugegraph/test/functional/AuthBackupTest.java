@@ -48,7 +48,7 @@ public class AuthBackupTest extends AuthTest {
         HugeGraphCommand.main(args);
 
         Assert.assertTrue(FileUtil.checkFileExists(DEFAULT_URL));
-        List<String> fileNames = FileUtil.getFileSubdirectories(DEFAULT_URL);
+        List<String> fileNames = FileUtil.subdirectories(DEFAULT_URL);
         Assert.assertTrue(fileNames.size() == 5);
     }
 
@@ -65,7 +65,7 @@ public class AuthBackupTest extends AuthTest {
         HugeGraphCommand.main(args);
 
         Assert.assertTrue(FileUtil.checkFileExists(DEFAULT_URL));
-        List<String> fileNames = FileUtil.getFileSubdirectories(DEFAULT_URL);
+        List<String> fileNames = FileUtil.subdirectories(DEFAULT_URL);
         Assert.assertTrue(fileNames.size() == 2);
     }
 
@@ -79,7 +79,7 @@ public class AuthBackupTest extends AuthTest {
                 "--types", "user,group,test"
         };
 
-        Assert.assertThrows(ParameterException.class, () -> {
+        Assert.assertThrows(IllegalArgumentException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
             Assert.assertContains("valid value is 'all' or combination of " +
@@ -102,7 +102,7 @@ public class AuthBackupTest extends AuthTest {
         HugeGraphCommand.main(args);
 
         Assert.assertTrue(FileUtil.checkFileExists(directory));
-        List<String> fileNames = FileUtil.getFileSubdirectories(directory);
+        List<String> fileNames = FileUtil.subdirectories(directory);
         Assert.assertTrue(fileNames.size() == 5);
     }
 }

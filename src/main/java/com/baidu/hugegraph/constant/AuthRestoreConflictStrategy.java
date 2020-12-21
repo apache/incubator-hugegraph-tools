@@ -50,4 +50,27 @@ public enum AuthRestoreConflictStrategy {
     public String string() {
         return this.name;
     }
+
+    public static boolean matchStrategy(String strategy) {
+        if (AuthRestoreConflictStrategy.STOP.string().equals(strategy) ||
+            AuthRestoreConflictStrategy.IGNORE.string().equals(strategy)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean matchStrategy(AuthRestoreConflictStrategy strategy) {
+        if (AuthRestoreConflictStrategy.STOP == strategy ||
+            AuthRestoreConflictStrategy.IGNORE == strategy) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean matchStopStrategy(AuthRestoreConflictStrategy strategy) {
+        if (AuthRestoreConflictStrategy.STOP == strategy) {
+            return true;
+        }
+        return false;
+    }
 }

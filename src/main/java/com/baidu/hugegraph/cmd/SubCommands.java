@@ -847,24 +847,24 @@ public class SubCommands {
             return this.retry.retry;
         }
 
-        public String directory() {
-            return this.directory;
+        public void retry(int retry) {
+            this.retry.retry = retry;
         }
 
-        public Map<String, String> hdfsConf() {
-            return this.hdfsConf;
+        public String directory() {
+            return this.directory;
         }
 
         public void directory(String directory) {
             this.directory = directory;
         }
 
-        public void hdfsConf(Map<String, String> hdfsConf) {
-            this.hdfsConf = hdfsConf;
+        public Map<String, String> hdfsConf() {
+            return this.hdfsConf;
         }
 
-        public void retry(int retry) {
-            this.retry.retry = retry;
+        public void hdfsConf(Map<String, String> hdfsConf) {
+            this.hdfsConf = hdfsConf;
         }
     }
 
@@ -894,7 +894,7 @@ public class SubCommands {
                                  "'stop' and 'ignore', default is 'stop'. 'stop' means " +
                                  "if there a conflict, stop restore. 'ignore' means if " +
                                  "there a conflict, ignore and continue to restore.")
-        public String strategy = AuthStrategyConverter.strategy;
+        public AuthRestoreConflictStrategy strategy = AuthStrategyConverter.strategy;
 
         @Parameter(names = {"--init-password"}, arity = 1,
                    description = "Init user password, if restore type include " +
@@ -909,11 +909,11 @@ public class SubCommands {
             this.types.types = types;
         }
 
-        public String strategy() {
+        public AuthRestoreConflictStrategy strategy() {
             return this.strategy;
         }
 
-        public void strategy(String strategy) {
+        public void strategy(AuthRestoreConflictStrategy strategy) {
             this.strategy = strategy;
         }
 
@@ -1024,7 +1024,7 @@ public class SubCommands {
                 try {
                     hugeTypes.add(HugeType.valueOf(type.toUpperCase()));
                 } catch (IllegalArgumentException e) {
-                    throw new ParameterException(String.format(
+                    throw new IllegalArgumentException(String.format(
                               "Invalid --type '%s', valid value is 'all' or " +
                               "combination of [user,group,target," +
                               "belong,access]", type));
@@ -1035,19 +1035,19 @@ public class SubCommands {
     }
 
     public static class AuthStrategyConverter
-                  implements IStringConverter<String> {
+                  implements IStringConverter<AuthRestoreConflictStrategy> {
 
-        public static final String strategy = "stop";
+        public static final AuthRestoreConflictStrategy strategy =
+                            AuthRestoreConflictStrategy.STOP;
 
         @Override
-        public String convert(String value) {
+        public AuthRestoreConflictStrategy convert(String value) {
             E.checkArgument(value != null && !value.isEmpty(),
                             "Strategy can't be null or empty");
-            E.checkArgument(AuthRestoreConflictStrategy.STOP.string().equals(value) ||
-                            AuthRestoreConflictStrategy.IGNORE.string().equals(value),
+            E.checkArgument(AuthRestoreConflictStrategy.matchStrategy(value),
                             "Invalid --strategy '%s', valid value is" +
                             " 'stop' or 'ignore", value);
-            return value;
+            return AuthRestoreConflictStrategy.fromName(value);
         }
     }
 

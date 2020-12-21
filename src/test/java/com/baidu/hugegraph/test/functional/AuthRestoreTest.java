@@ -159,7 +159,7 @@ public class AuthRestoreTest extends AuthTest {
                 "--directory", DEFAULT_URL
         };
 
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assert.assertThrows(IllegalStateException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
             String msg = e.getMessage();
@@ -169,7 +169,7 @@ public class AuthRestoreTest extends AuthTest {
     }
 
     @Test
-    public void testAuthRestoreWithStopStrategy() {
+    public void testAuthRestoreWithConflictAndStopStrategy() {
         this.loadData(HugeType.USER, "auth_users_conflict.txt");
 
         String[] args = new String[]{
@@ -182,7 +182,7 @@ public class AuthRestoreTest extends AuthTest {
                 "--init-password", "123456"
         };
 
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assert.assertThrows(IllegalStateException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
             Assert.assertContains("Restore conflict with STOP strategy",
@@ -253,7 +253,7 @@ public class AuthRestoreTest extends AuthTest {
                 "--directory", filePath
         };
 
-        Assert.assertThrows(ParameterException.class, () -> {
+        Assert.assertThrows(IllegalArgumentException.class, () -> {
             HugeGraphCommand.main(args);
         }, e -> {
             Assert.assertContains("valid value is 'all' or combination of " +

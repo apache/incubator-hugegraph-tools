@@ -53,7 +53,7 @@ public class FileUtil {
         return false;
     }
 
-    public static List<String> getFileSubdirectories(String filePath) {
+    public static List<String> subdirectories(String filePath) {
         File file = new File(filePath);
         if (!file.exists()) {
             return ListUtils.EMPTY_LIST;
