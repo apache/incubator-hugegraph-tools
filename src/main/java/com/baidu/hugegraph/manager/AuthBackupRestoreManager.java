@@ -308,7 +308,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 User restoreUser = entry.getValue();
                 restoreUser.password(initPassword);
                 User user = retry(() -> {
-                return client.authManager().createUser(restoreUser);
+                    return client.authManager().createUser(restoreUser);
                 }, "Restore users of authority");
                 idsMap.put(restoreUser.id().toString(), user.id().toString());
                 count++;
@@ -377,7 +377,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
             for (Map.Entry<String, Group> entry : groupsByName.entrySet()) {
                 Group restoreGroup = entry.getValue();
                 Group group = retry(() -> {
-                return client.authManager().createGroup(restoreGroup);
+                    return client.authManager().createGroup(restoreGroup);
                 }, "Restore groups of authority");
                 idsMap.put(restoreGroup.id().toString(), group.id().toString());
                 count++;
@@ -450,7 +450,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
             for (Map.Entry<String, Target> entry : targetsByName.entrySet()) {
                 Target restoreTarget = entry.getValue();
                 Target target = retry(() -> {
-                return client.authManager().createTarget(restoreTarget);
+                    return client.authManager().createTarget(restoreTarget);
                 }, "Restore targets of authority");
                 idsMap.put(restoreTarget.id().toString(),
                            target.id().toString());
@@ -484,8 +484,8 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                                          "Querying belongs of authority");
             Map<String, Belong>  belongMap = Maps.newHashMap();
             for (Belong belong : belongs) {
-                 belongMap.put(belong.user() + ":" + belong.group(),
-                               belong);
+                 String belongKey = belong.user() + ":" + belong.group();
+                 belongMap.put(belongKey, belong);
             }
             List<String> belongJsons = readRestoreData(HugeType.BELONG);
             List<String> conflicts = Lists.newArrayList();
@@ -520,7 +520,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 restoreBelong.group(idsMap.get(restoreBelong.group().toString()));
                 retry(() -> {
                      return client.authManager().createBelong(restoreBelong);
-                     }, "Restore belongs of authority");
+                }, "Restore belongs of authority");
                 count++;
             }
             Printer.print("Restore belongs finished, count is %d !", count);
@@ -545,8 +545,8 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                                           "Querying accesses of authority");
             Map<String, Access>  accessMap = Maps.newHashMap();
             for (Access access : accesses) {
-                 accessMap.put(access.group() + ":" + access.target(),
-                               access);
+                 String accessKey = access.group() + ":" + access.target();
+                 accessMap.put(accessKey, access);
             }
             List<String> accessJsons = readRestoreData(HugeType.ACCESS);
             List<String> conflicts = Lists.newArrayList();
@@ -581,7 +581,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 restoreAccess.group(idsMap.get(restoreAccess.group().toString()));
                 retry(() -> {
                      return client.authManager().createAccess(restoreAccess);
-                     }, "Restore access of authority");
+                }, "Restore access of authority");
                 count++;
             }
             Printer.print("Restore accesses finished, count is %d !",

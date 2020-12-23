@@ -1045,8 +1045,8 @@ public class SubCommands {
             E.checkArgument(value != null && !value.isEmpty(),
                             "Strategy can't be null or empty");
             E.checkArgument(AuthRestoreConflictStrategy.matchStrategy(value),
-                            "Invalid --strategy '%s', valid value is" +
-                            " 'stop' or 'ignore", value);
+                            "Invalid --strategy '%s', valid value is " +
+                            "'stop' or 'ignore", value);
             return AuthRestoreConflictStrategy.fromName(value);
         }
     }
