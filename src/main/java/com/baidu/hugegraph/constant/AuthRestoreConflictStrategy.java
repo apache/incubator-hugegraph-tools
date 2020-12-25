@@ -37,18 +37,16 @@ public enum AuthRestoreConflictStrategy {
         return this.code;
     }
 
-    public static AuthRestoreConflictStrategy fromName(String name) {
-        AuthRestoreConflictStrategy[] restoreStrategys = AuthRestoreConflictStrategy.values();
-        for (AuthRestoreConflictStrategy strategy : restoreStrategys) {
-            if (strategy.string().equals(name)) {
-                return strategy;
-            }
-        }
-        return null;
-    }
-
     public String string() {
         return this.name;
+    }
+
+    public boolean isStopStrategy() {
+        return this == AuthRestoreConflictStrategy.STOP;
+    }
+
+    public boolean isIgnoreStrategy() {
+        return this == AuthRestoreConflictStrategy.IGNORE;
     }
 
     public static boolean matchStrategy(String strategy) {
@@ -59,18 +57,13 @@ public enum AuthRestoreConflictStrategy {
         return false;
     }
 
-    public static boolean matchStrategy(AuthRestoreConflictStrategy strategy) {
-        if (AuthRestoreConflictStrategy.STOP == strategy ||
-            AuthRestoreConflictStrategy.IGNORE == strategy) {
-            return true;
+    public static AuthRestoreConflictStrategy fromName(String name) {
+        AuthRestoreConflictStrategy[] restoreStrategys = AuthRestoreConflictStrategy.values();
+        for (AuthRestoreConflictStrategy strategy : restoreStrategys) {
+            if (strategy.string().equals(name)) {
+                return strategy;
+            }
         }
-        return false;
-    }
-
-    public static boolean matchStopStrategy(AuthRestoreConflictStrategy strategy) {
-        if (AuthRestoreConflictStrategy.STOP == strategy) {
-            return true;
-        }
-        return false;
+        return null;
     }
 }

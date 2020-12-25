@@ -890,15 +890,18 @@ public class SubCommands {
         @Parameter(names = {"--strategy"},
                    converter = AuthStrategyConverter.class,
                    description = "The strategy needs to be chosen in the event " +
-                                 "of a conflict in restore. valid strategies include " +
-                                 "'stop' and 'ignore', default is 'stop'. 'stop' means " +
-                                 "if there a conflict, stop restore. 'ignore' means if " +
-                                 "there a conflict, ignore and continue to restore.")
+                                 "of a conflict when restoring. valid " +
+                                 "strategies include 'stop' and 'ignore', " +
+                                 "default is 'stop'. 'stop' means if there " +
+                                 "a conflict, stop restore. 'ignore' means if " +
+                                 "there a conflict, ignore and continue to " +
+                                 "restore.")
         public AuthRestoreConflictStrategy strategy = AuthStrategyConverter.strategy;
 
         @Parameter(names = {"--init-password"}, arity = 1,
                    description = "Init user password, if restore type include " +
-                                 "'user', must init user password.")
+                                 "'user', please specify the init-password of " +
+                                 "users.")
         public String initPassword = StringUtils.EMPTY;
 
         public List<HugeType> types() {

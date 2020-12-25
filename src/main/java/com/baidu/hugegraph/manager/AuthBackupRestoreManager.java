@@ -287,10 +287,10 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                     conflict++;
                 }
                 if (conflict > NO_CONFLICT) {
-                    E.checkState(AuthRestoreConflictStrategy.matchStrategy(
-                                 strategy),
+                    E.checkState(strategy.isStopStrategy() ||
+                                 strategy.isIgnoreStrategy(),
                                  "Restore users strategy is not found");
-                    if (AuthRestoreConflictStrategy.matchStopStrategy(strategy)) {
+                    if (strategy.isStopStrategy()) {
                         conflicts.add(restoreUser.toString());
                     }
                 } else {
@@ -357,10 +357,10 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                     conflict++;
                 }
                 if (conflict > NO_CONFLICT) {
-                    E.checkState(AuthRestoreConflictStrategy.matchStrategy(
-                                 strategy),
+                    E.checkState(strategy.isStopStrategy() ||
+                                 strategy.isIgnoreStrategy(),
                                  "Restore groups strategy is not found");
-                    if (AuthRestoreConflictStrategy.matchStopStrategy(strategy)) {
+                    if (strategy.isStopStrategy()) {
                         conflicts.add(restoreGroup.toString());
                     }
                 } else {
@@ -430,10 +430,10 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                     conflict++;
                 }
                 if (conflict > NO_CONFLICT) {
-                    E.checkState(AuthRestoreConflictStrategy.matchStrategy(
-                                 strategy),
+                    E.checkState(strategy.isStopStrategy() ||
+                                 strategy.isIgnoreStrategy(),
                                  "Restore targets strategy is not found");
-                    if (AuthRestoreConflictStrategy.matchStopStrategy(strategy)) {
+                    if (strategy.isStopStrategy()) {
                         conflicts.add(restoreTarget.toString());
                     }
                 } else {
@@ -498,10 +498,10 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 String ids = idsMap.get(restoreBelong.user()) + ":" +
                              idsMap.get(restoreBelong.group());
                 if (belongMap.containsKey(ids)) {
-                    E.checkState(AuthRestoreConflictStrategy.matchStrategy(
-                                 strategy),
+                    E.checkState(strategy.isStopStrategy() ||
+                                 strategy.isIgnoreStrategy(),
                                  "Restore belongs strategy is not found");
-                    if (AuthRestoreConflictStrategy.matchStopStrategy(strategy)) {
+                    if (strategy.isStopStrategy()) {
                         conflicts.add(restoreBelong.toString());
                     }
                     continue;
@@ -559,10 +559,10 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 String ids = idsMap.get(restoreAccess.group()) + ":" +
                              idsMap.get(restoreAccess.target());
                 if (accessMap.containsKey(ids)) {
-                    E.checkState(AuthRestoreConflictStrategy.matchStrategy(
-                                 strategy),
+                    E.checkState(strategy.isStopStrategy() ||
+                                 strategy.isIgnoreStrategy(),
                                  "Restore accesses strategy is not found");
-                    if (AuthRestoreConflictStrategy.matchStopStrategy(strategy)) {
+                    if (strategy.isStopStrategy()) {
                         conflicts.add(restoreAccess.toString());
                     }
                     continue;
