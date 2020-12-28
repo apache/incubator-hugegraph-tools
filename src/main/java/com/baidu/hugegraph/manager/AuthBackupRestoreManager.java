@@ -313,7 +313,8 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 idsMap.put(restoreUser.id().toString(), user.id().toString());
                 count++;
             }
-            Printer.print("Restore users finished, count is %d !", count);
+            Printer.print("Restore users finished, total count is %d",
+                          count);
         }
 
         private void prepareUserForRestore(User restoreUser) {
@@ -382,7 +383,8 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 idsMap.put(restoreGroup.id().toString(), group.id().toString());
                 count++;
             }
-            Printer.print("Restore groups finished, count is %d !", count);
+            Printer.print("Restore groups finished, total count is %d",
+                          count);
         }
 
         private void prepareGroupForRestore(Group restoreGroup) {
@@ -456,7 +458,8 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                            target.id().toString());
                 count++;
             }
-            Printer.print("Restore targets finished, count is %d !", count);
+            Printer.print("Restore targets finished, total count is %d",
+                          count);
         }
 
         private void prepareTargetForRestore(Target restoreTarget) {
@@ -523,7 +526,8 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 }, "Restore belongs of authority");
                 count++;
             }
-            Printer.print("Restore belongs finished, count is %d !", count);
+            Printer.print("Restore belongs finished, total count is %d",
+                          count);
         }
     }
 
@@ -584,7 +588,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 }, "Restore access of authority");
                 count++;
             }
-            Printer.print("Restore accesses finished, count is %d !",
+            Printer.print("Restore accesses finished, total count is %d",
                           count);
         }
     }
