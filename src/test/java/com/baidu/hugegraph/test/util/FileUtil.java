@@ -68,7 +68,7 @@ public class FileUtil {
         return list;
     }
 
-    public static void clearFile(String filePath) {
+    public static void clearDirectories(String filePath) {
         File file = new File(filePath);
         if (file.exists()) {
             String[] files = file.list();
@@ -91,7 +91,7 @@ public class FileUtil {
              baos.write(builder.toString().getBytes(API.CHARSET));
              os.write(baos.toByteArray());
         } catch (IOException e) {
-             throw new ToolsException("Failed writeText file path is %s",
+             throw new ToolsException("Failed write file path is %s",
                                       e, filePath);
         }
 
@@ -99,19 +99,19 @@ public class FileUtil {
     }
 
     public static List<String> readTestRestoreData(String filePath) {
-        List<String> resultList = Lists.newArrayList();
+        List<String> results = Lists.newArrayList();
         try (InputStream is = new FileInputStream(filePath);
              InputStreamReader isr = new InputStreamReader(is, API.CHARSET)) {
              BufferedReader reader = new BufferedReader(isr);
              String line;
              while ((line = reader.readLine()) != null) {
-                 resultList.add(line);
+                 results.add(line);
              }
         } catch (IOException e) {
              throw new ToolsException("Failed read file path is %s",
                                       e, filePath);
         }
 
-        return resultList;
+        return results;
     }
 }

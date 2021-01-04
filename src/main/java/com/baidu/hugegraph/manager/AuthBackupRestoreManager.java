@@ -185,7 +185,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
              }
         } catch (IOException e) {
             throw new ToolsException("Failed to deserialize %s from %s",
-                                     e, resultList, type.string());
+                                     e, type.string(), resultList);
         }
         return resultList;
     }
@@ -338,7 +338,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
         @Override
         public List<String> checkConflict() {
             List<Group> groups = retry(client.authManager()::listGroups,
-                                       "querying users of authority");
+                                       "querying groups of authority");
             Map<String, Group> groupMap = Maps.newHashMap();
             for (Group group : groups) {
                  groupMap.put(group.name(), group);
@@ -585,7 +585,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 restoreAccess.group(idsMap.get(restoreAccess.group().toString()));
                 retry(() -> {
                      return client.authManager().createAccess(restoreAccess);
-                }, "restore access of authority");
+                }, "restore accesses of authority");
                 count++;
             }
             Printer.print("Restore accesses finished, total count is %d",

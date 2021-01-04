@@ -829,6 +829,9 @@ public class SubCommands {
 
     public static class AuthBackupRestore {
 
+        @ParametersDelegate
+        private AuthTypes types = new AuthTypes();
+
         @Parameter(names = {"--directory"}, arity = 1,
                    description = "Directory of auth information, default " +
                                  "is './{auth-backup-restore}' in local " +
@@ -842,6 +845,14 @@ public class SubCommands {
 
         @ParametersDelegate
         private Retry retry = new Retry();
+
+        public List<HugeType> types() {
+            return this.types.types;
+        }
+
+        public void types(List<HugeType> types) {
+            this.types.types = types;
+        }
 
         public int retry() {
             return this.retry.retry;
@@ -869,28 +880,14 @@ public class SubCommands {
     }
 
     public static class AuthBackup extends AuthBackupRestore {
-
-        @ParametersDelegate
-        private AuthTypes types = new AuthTypes();
-
-        public List<HugeType> types() {
-            return this.types.types;
-        }
-
-        public void types(List<HugeType> types) {
-            this.types.types = types;
-        }
     }
 
     public static class AuthRestore extends AuthBackupRestore {
 
-        @ParametersDelegate
-        private AuthTypes types = new AuthTypes();
-
         @Parameter(names = {"--strategy"},
                    converter = AuthStrategyConverter.class,
                    description = "The strategy needs to be chosen in the event " +
-                                 "of a conflict when restoring. valid " +
+                                 "of a conflict when restoring. Valid " +
                                  "strategies include 'stop' and 'ignore', " +
                                  "default is 'stop'. 'stop' means if there " +
                                  "a conflict, stop restore. 'ignore' means if " +
@@ -903,14 +900,6 @@ public class SubCommands {
                                  "'user', please specify the init-password of " +
                                  "users.")
         public String initPassword = StringUtils.EMPTY;
-
-        public List<HugeType> types() {
-            return this.types.types;
-        }
-
-        public void types(List<HugeType> types) {
-            this.types.types = types;
-        }
 
         public AuthRestoreConflictStrategy strategy() {
             return this.strategy;
@@ -933,13 +922,15 @@ public class SubCommands {
 
         @Parameter(names = {"--types", "-t"},
                    listConverter = AuthHugeTypeConverter.class,
-                   description = "Type of auth data to restore and backup, concat with " +
-                                 "',' if more than one. 'all' means all auth information" +
-                                 " in other words, 'all' equals with 'user, group, target, " +
-                                 "belong, access'. in addition, only 'belong' or 'access' " +
-                                 "can not backup or restore, if type contains 'belong' " +
-                                 "then should contains 'user' and 'group'. if type contains " +
-                                 "'access' then should contains 'group' and 'target'.")
+                   description = "Type of auth data to restore and backup, " +
+                                 "concat with ',' if more than one. 'all' " +
+                                 "means all auth information. In other words, " +
+                                 "'all' equals with 'user, group, target, " +
+                                 "belong, access'. In addition, 'belong' or " +
+                                 "'access' can not backup or restore alone, if " +
+                                 "type contains 'belong' then should contains " +
+                                 "'user' and 'group'. if type contains 'access' " +
+                                 "then should contains 'group' and 'target'.")
         public List<HugeType> types = AuthHugeTypeConverter.AUTH_ALL_TYPES;
     }
 

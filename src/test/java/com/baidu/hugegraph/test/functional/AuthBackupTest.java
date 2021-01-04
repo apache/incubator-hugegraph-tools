@@ -27,13 +27,12 @@ import org.junit.Test;
 import com.baidu.hugegraph.cmd.HugeGraphCommand;
 import com.baidu.hugegraph.test.util.FileUtil;
 import com.baidu.hugegraph.testutil.Assert;
-import com.beust.jcommander.ParameterException;
 
 public class AuthBackupTest extends AuthTest {
 
     @Before
     public void init() {
-        FileUtil.clearFile(DEFAULT_URL);
+        FileUtil.clearDirectories(DEFAULT_URL);
     }
 
     @Test
