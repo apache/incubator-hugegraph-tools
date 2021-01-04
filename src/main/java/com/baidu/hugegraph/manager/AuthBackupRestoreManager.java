@@ -259,7 +259,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
         @Override
         public List<String> checkConflict() {
             List<User> users = retry(client.authManager()::listUsers,
-                                     "Querying users of authority");
+                                     "querying users of authority");
             Map<String, User> userMap = Maps.newHashMap();
             for (User user : users) {
                  userMap.put(user.name(), user);
@@ -309,7 +309,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 restoreUser.password(initPassword);
                 User user = retry(() -> {
                     return client.authManager().createUser(restoreUser);
-                }, "Restore users of authority");
+                }, "restore users of authority");
                 idsMap.put(restoreUser.id().toString(), user.id().toString());
                 count++;
             }
@@ -338,7 +338,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
         @Override
         public List<String> checkConflict() {
             List<Group> groups = retry(client.authManager()::listGroups,
-                                       "Querying users of authority");
+                                       "querying users of authority");
             Map<String, Group> groupMap = Maps.newHashMap();
             for (Group group : groups) {
                  groupMap.put(group.name(), group);
@@ -379,7 +379,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 Group restoreGroup = entry.getValue();
                 Group group = retry(() -> {
                     return client.authManager().createGroup(restoreGroup);
-                }, "Restore groups of authority");
+                }, "restore groups of authority");
                 idsMap.put(restoreGroup.id().toString(), group.id().toString());
                 count++;
             }
@@ -408,7 +408,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
         @Override
         public List<String> checkConflict() {
             List<Target> targets = retry(client.authManager()::listTargets,
-                                         "Querying targets of authority");
+                                         "querying targets of authority");
             Map<String, Target> targetMap = Maps.newHashMap();
             for (Target target : targets) {
                  targetMap.put(target.name(), target);
@@ -453,7 +453,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 Target restoreTarget = entry.getValue();
                 Target target = retry(() -> {
                     return client.authManager().createTarget(restoreTarget);
-                }, "Restore targets of authority");
+                }, "restore targets of authority");
                 idsMap.put(restoreTarget.id().toString(),
                            target.id().toString());
                 count++;
@@ -484,7 +484,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
         @Override
         public List<String> checkConflict() {
             List<Belong> belongs = retry(client.authManager()::listBelongs,
-                                         "Querying belongs of authority");
+                                         "querying belongs of authority");
             Map<String, Belong>  belongMap = Maps.newHashMap();
             for (Belong belong : belongs) {
                  String belongKey = belong.user() + ":" + belong.group();
@@ -523,7 +523,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 restoreBelong.group(idsMap.get(restoreBelong.group().toString()));
                 retry(() -> {
                      return client.authManager().createBelong(restoreBelong);
-                }, "Restore belongs of authority");
+                }, "restore belongs of authority");
                 count++;
             }
             Printer.print("Restore belongs finished, total count is %d",
@@ -546,7 +546,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
         @Override
         public List<String> checkConflict() {
             List<Access> accesses = retry(client.authManager()::listAccesses,
-                                          "Querying accesses of authority");
+                                          "querying accesses of authority");
             Map<String, Access>  accessMap = Maps.newHashMap();
             for (Access access : accesses) {
                  String accessKey = access.group() + ":" + access.target();
@@ -585,7 +585,7 @@ public class AuthBackupRestoreManager extends BackupRestoreBaseManager {
                 restoreAccess.group(idsMap.get(restoreAccess.group().toString()));
                 retry(() -> {
                      return client.authManager().createAccess(restoreAccess);
-                }, "Restore access of authority");
+                }, "restore access of authority");
                 count++;
             }
             Printer.print("Restore accesses finished, total count is %d",
