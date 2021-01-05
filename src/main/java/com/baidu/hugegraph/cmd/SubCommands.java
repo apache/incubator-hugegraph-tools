@@ -674,8 +674,8 @@ public class SubCommands {
     public static class TrustStoreFile {
 
         @Parameter(names = {"--trust-store-file"}, arity = 1,
-                   description = "The path of client truststore file used when https " +
-                                 "protocol is enabled")
+                   description = "The path of client truststore file used when " +
+                                 "https protocol is enabled")
         public String trustStoreFile;
     }
 
@@ -700,12 +700,13 @@ public class SubCommands {
         @Parameter(names = {"--huge-types", "-t"},
                    listConverter = HugeTypeListConverter.class,
                    description = "Type of schema/data. Concat with ',' if more " +
-                                 "than one. other types include 'all' and 'schema'." +
-                                 " 'all' means all vertices, edges and schema, in " +
-                                 "other words, 'all' equals with 'vertex, edge, " +
-                                 "vertex_label, edge_label, property_key, index_label'." +
-                                 " 'schema' equals with 'vertex_label, edge_label, " +
-                                 "property_key, index_label'.")
+                                 "than one. Other types include 'all' and " +
+                                 "'schema'. 'all' means all vertices, edges and " +
+                                 "schema. In other words, 'all' equals with " +
+                                 "'vertex, edge, vertex_label, edge_label, " +
+                                 "property_key, index_label'. 'schema' equals " +
+                                 "with 'vertex_label, edge_label, property_key, " +
+                                 "index_label'.")
         public List<HugeType> types = HugeTypeListConverter.ALL_TYPES;
     }
 
@@ -929,7 +930,7 @@ public class SubCommands {
                                  "belong, access'. In addition, 'belong' or " +
                                  "'access' can not backup or restore alone, if " +
                                  "type contains 'belong' then should contains " +
-                                 "'user' and 'group'. if type contains 'access' " +
+                                 "'user' and 'group'. If type contains 'access' " +
                                  "then should contains 'group' and 'target'.")
         public List<HugeType> types = AuthHugeTypeConverter.AUTH_ALL_TYPES;
     }
