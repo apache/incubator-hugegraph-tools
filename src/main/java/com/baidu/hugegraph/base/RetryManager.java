@@ -83,6 +83,9 @@ public class RetryManager extends ToolManager {
     }
 
     public void shutdown(String taskType) {
+        if (this.pool == null) {
+            return;
+        }
         this.pool.shutdown();
         try {
             this.pool.awaitTermination(24, TimeUnit.HOURS);
