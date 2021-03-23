@@ -588,9 +588,8 @@ public class SubCommands {
 
         @Parameter(names = {"--thread-num", "-T"}, arity = 1,
                    validateWith = {PositiveValidator.class},
-                   description = "Threads number to use, default is Math.min" +
-                                 "(10, Math.max(4, Runtime.getRuntime()" +
-                                 ".availableProcessors() / 2))")
+                   description = "Threads number to use, default is " +
+                                 "Math.min(10, Math.max(4, CPUs / 2))")
         public int threadsNum;
 
         @ParametersDelegate
