@@ -34,7 +34,7 @@ jobs:
           fetch-depth: 2
       - name: Compile
         run: |
-          mvn compile -Dmaven.javadoc.skip=true | grep -v "Downloading\|Downloaded"
+          mvn compile -Dmaven.javadoc.skip=true
       - name: Prepare env and service
         run: |
           $TRAVIS_DIR/install-hugegraph-from-source.sh $COMMIT_ID
