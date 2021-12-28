@@ -36,6 +36,10 @@ public class GraphsManager extends ToolManager {
         return this.client.graphs().createGraph(name, config);
     }
 
+    public Map<String, String> clone(String name, String cloneGraphName) {
+        return this.client.graphs().cloneGraph(name, cloneGraphName);
+    }
+
     public List<String> list() {
         return this.client.graphs().listGraph();
     }

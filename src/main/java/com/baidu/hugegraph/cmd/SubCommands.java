@@ -60,6 +60,7 @@ public class SubCommands {
 
     private void initSubCommands() {
         this.commands.put("graph-create", new GraphCreate());
+        this.commands.put("graph-clone", new GraphClone());
         this.commands.put("graph-list", new GraphList());
         this.commands.put("graph-get", new GraphGet());
         this.commands.put("graph-clear", new GraphClear());
@@ -388,6 +389,26 @@ public class SubCommands {
 
         public String config() {
             return this.configFile.config;
+        }
+    }
+
+    @Parameters(commandDescription = "Clone graph")
+    public static class GraphClone {
+
+        @Parameter(names = {"--name", "-n"}, arity = 1,
+                   description = "The name of new created graph, default is g")
+        public String name = "g";
+
+        @Parameter(names = {"--clone-graph-name"}, arity = 1,
+                   description = "The name of cloned graph, default is hugegraph")
+        public String cloneGraphName = "hugegraph";
+
+        public String name() {
+            return this.name;
+        }
+
+        public String cloneGraphName() {
+            return this.cloneGraphName;
         }
     }
 

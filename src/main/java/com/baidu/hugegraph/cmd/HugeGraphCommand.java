@@ -275,7 +275,18 @@ public class HugeGraphCommand {
                 }
                 graphsManager = manager(GraphsManager.class);
                 graphsManager.create(graphCreate.name(), graphCreate.config());
-                Printer.print("Graph '%s' is created", this.graph());
+                Printer.print("Graph '%s' is created", graphCreate.name());
+                break;
+            case "graph-clone":
+                SubCommands.GraphClone graphClone = this.subCommand(subCmd);
+                if (timeout() < DEFAULT_GRAPH_CREATE_TIMEOUT) {
+                    this.timeout(DEFAULT_GRAPH_CREATE_TIMEOUT);
+                }
+                graphsManager = manager(GraphsManager.class);
+                graphsManager.clone(graphClone.name(),
+                                    graphClone.cloneGraphName());
+                Printer.print("Graph '%s' is created(cloned from '%s')",
+                              graphClone.name(), graphClone.cloneGraphName());
                 break;
             case "graph-list":
                 graphsManager = manager(GraphsManager.class);
